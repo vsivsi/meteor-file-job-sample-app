@@ -1,0 +1,12 @@
+{
+  "packages": {
+    "bootstrap-3": {},
+    "jquery-cookie": {},
+    "numeral": {},
+    "jobCollection" : {},
+    "fileCollection": {
+        "git": "https://github.com/vsivsi/meteor-file-collection.git",
+        "branch": "master"
+    }
+  }
+}
