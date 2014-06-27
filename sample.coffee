@@ -19,8 +19,6 @@ myData = FileCollection({
 
 if Meteor.isClient
 
-   Meteor.subscribe 'allData'
-
    Meteor.startup () ->
 
       ################################
@@ -60,12 +58,11 @@ if Meteor.isClient
          console.warn "Error uploading", file.uniqueIdentifier
          Session.set file.uniqueIdentifier, undefined
 
-   # Set up an autorun to keep the X-Auth-Token cookie up-to-date.
-   # Note, this may run AFTER templates are updated based on new
-   # data coming from the fileCollection Pub/Sub. See:
-   # Template.collTest.link below for the solution.
+   # Set up an autorun to keep the X-Auth-Token cookie up-to-date and
+   # to update the subscription when the userId changes.
    Deps.autorun () ->
       userId = Meteor.userId()
+      Meteor.subscribe 'allData', userId
       token = Accounts._storedLoginToken()
       cookie = $.cookie 'X-Auth-Token'
       if cookie isnt token
@@ -92,14 +89,7 @@ if Meteor.isClient
       "#{this._id}"
 
    Template.collTest.link = () ->
-      # This test is necessary because this may get called
-      # before Meteor.userId() updates when a user logs in.
-      # Without this, an image load may fail, and won't be
-      # retried with an URL change.
-      if this.metadata?._auth?.owner isnt Meteor.userId()
-         return '' # Don't generate an URL if userId isn't updated
-      else
-         return myData.baseURL + "/" + this.md5
+      return myData.baseURL + "/" + this.md5
 
    Template.collTest.uploadStatus = () ->
       percent = Session.get "#{this._id}"
@@ -138,8 +128,14 @@ if Meteor.isServer
    Meteor.startup () ->
 
       # Only publish files owned by this userId, and ignore temp file chunks used by resumable
-      Meteor.publish 'allData', () ->
-         myData.find({ 'metadata._Resumable': { $exists: false }, 'metadata._auth.owner': this.userId })
+      Meteor.publish 'allData', (clientUserId) ->
+
+         # This prevents a race condition on the client between Meteor.userId() and subscriptions to this publish
+         # See: https://stackoverflow.com/questions/24445404/how-to-prevent-a-client-reactive-race-between-meteor-userid-and-a-subscription/24460877#24460877
+         if this.userId is clientUserId
+            return myData.find({ 'metadata._Resumable': { $exists: false }, 'metadata._auth.owner': this.userId })
+         else
+            return null
 
       # Don't allow users to modify the user docs
       Meteor.users.deny({update: () -> true })
