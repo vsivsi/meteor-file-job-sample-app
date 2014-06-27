@@ -23,12 +23,6 @@ if Meteor.isClient
 
    Meteor.startup () ->
 
-      # Set up an autorun to keep the X-Auth-Token cookie up-to-date
-      Deps.autorun () ->
-         Meteor.userId()
-         token = Accounts._storedLoginToken()
-         $.cookie 'X-Auth-Token', token
-
       ################################
       # Setup resumable.js in the UI
 
@@ -66,6 +60,18 @@ if Meteor.isClient
          console.warn "Error uploading", file.uniqueIdentifier
          Session.set file.uniqueIdentifier, undefined
 
+   # Set up an autorun to keep the X-Auth-Token cookie up-to-date.
+   # Note, this may run AFTER templates are updated based on new
+   # data coming from the fileCollection Pub/Sub. See:
+   # Template.collTest.link below for the solution.
+   Deps.autorun () ->
+      userId = Meteor.userId()
+      token = Accounts._storedLoginToken()
+      cookie = $.cookie 'X-Auth-Token'
+      if cookie isnt token
+         $.removeCookie 'X-Auth-Token' if cookie
+         $.cookie 'X-Auth-Token', token
+
    #####################
    # UI template helpers
 
@@ -86,7 +92,14 @@ if Meteor.isClient
       "#{this._id}"
 
    Template.collTest.link = () ->
-      myData.baseURL + "/" + this.md5
+      # This test is necessary because this may get called
+      # before Meteor.userId() updates when a user logs in.
+      # Without this, an image load may fail, and won't be
+      # retried with an URL change.
+      if this.metadata?._auth?.owner isnt Meteor.userId()
+         return '' # Don't generate an URL if userId isn't updated
+      else
+         return myData.baseURL + "/" + this.md5
 
    Template.collTest.uploadStatus = () ->
       percent = Session.get "#{this._id}"
