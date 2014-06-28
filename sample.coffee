@@ -63,11 +63,7 @@ if Meteor.isClient
    Deps.autorun () ->
       userId = Meteor.userId()
       Meteor.subscribe 'allData', userId
-      token = Accounts._storedLoginToken()
-      cookie = $.cookie 'X-Auth-Token'
-      if cookie isnt token
-         $.removeCookie 'X-Auth-Token' if cookie
-         $.cookie 'X-Auth-Token', token
+      $.cookie 'X-Auth-Token', Accounts._storedLoginToken()
 
    #####################
    # UI template helpers
