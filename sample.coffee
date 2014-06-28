@@ -131,7 +131,7 @@ if Meteor.isServer
          if this.userId is clientUserId
             return myData.find({ 'metadata._Resumable': { $exists: false }, 'metadata._auth.owner': this.userId })
          else
-            return null
+            return []
 
       # Don't allow users to modify the user docs
       Meteor.users.deny({update: () -> true })
