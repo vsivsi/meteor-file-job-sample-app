@@ -80,7 +80,6 @@ if Meteor.isClient
          Meteor.userId()
       myData: () -> myData
 
-
    fileTableHelpers =
       dataEntries: () ->
          # Reactively populate the table
@@ -121,6 +120,106 @@ if Meteor.isClient
 
    Template.fileTable.helpers fileTableHelpers
    Template.fileTable.events fileTableEvents
+
+   Template.jobTable.events
+      # Wire up the event to cancel a job by clicking the `X`
+      'click .cancel-job': (e, t) ->
+         console.log "Cancelling job: #{this._id}"
+         job = myJobs.makeJob this
+         job.cancel() if job
+      'click .remove-job': (e, t) ->
+         console.log "Removing job: #{this._id}"
+         job = myJobs.makeJob this
+         job.remove() if job
+      'click .restart-job': (e, t) ->
+         console.log "Restarting job: #{this._id}"
+         job = myJobs.makeJob this
+         job.restart() if job
+      'click .rerun-job': (e, t) ->
+         console.log "Rerunning job: #{this._id}"
+         job = myJobs.makeJob this
+         job.rerun() if job
+      'click .pause-job': (e, t) ->
+         console.log "Pausing job: #{this._id}"
+         job = myJobs.makeJob this
+         job.pause() if job
+      'click .resume-job': (e, t) ->
+         console.log "Resuming job: #{this._id}"
+         job = myJobs.makeJob this
+         job.resume() if job
+
+   Template.jobTable.helpers
+      jobEntries: () ->
+         # Reactively populate the table
+         myJobs.find({})
+
+      numDepends: () ->
+         this.depends?.length
+
+      numResolved: () ->
+         this.resolved?.length
+
+      jobId: () ->
+         this._id.valueOf()
+
+      statusBG: () ->
+         {
+            waiting: 'primary'
+            ready: 'info'
+            paused: 'default'
+            running: 'default'
+            cancelled: 'warning'
+            failed: 'danger'
+            completed: 'success'
+         }[this.status]
+
+      numRepeats: () ->
+         if this.repeats > Math.pow 2, 31
+            "∞"
+         else
+            this.repeats
+
+      numRetries: () ->
+         if this.retries > Math.pow 2, 31
+            "∞"
+         else
+            this.retries
+
+      runAt: () ->
+         Session.get 'date'
+         moment(this.after).fromNow()
+
+      lastUpdated: () ->
+         Session.get 'date'
+         moment(this.updated).fromNow()
+
+      futurePast: () ->
+         Session.get 'date'
+         if this.after > new Date()
+            "text-danger"
+         else
+            "text-success"
+
+      running: () ->
+         this.status is 'running'
+
+      cancellable: () ->
+         this.status in myJobs.jobStatusCancellable
+
+      removable: () ->
+         this.status in myJobs.jobStatusRemovable
+
+      restartable: () ->
+         this.status in myJobs.jobStatusRestartable
+
+      rerunable: () ->
+         this.status is 'completed'
+
+      pausable: () ->
+         this.status in myJobs.jobStatusPausable
+
+      resumable: () ->
+         this.status is 'paused'
 
 ############################################################
 # Server-only code
