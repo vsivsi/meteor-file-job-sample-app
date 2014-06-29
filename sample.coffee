@@ -7,11 +7,13 @@
 # Both client and server
 
 # Default collection name is 'fs'
-myData = FileCollection({
+myData = FileCollection('images', {
    resumable: true,     # Enable the resumable.js compatible chunked file upload interface
    http: [ { method: 'get', path: '/:md5', lookup: (params, query) -> return { md5: params.md5 }}]}
    # Define a GET API that uses the md5 sum id files
 )
+
+myJobs = JobCollection 'queue'
 
 ############################################################
 # Client-only code
@@ -19,13 +21,15 @@ myData = FileCollection({
 
 if Meteor.isClient
 
+   Meteor.subscribe 'allJobs'
+
    Meteor.startup () ->
 
       ################################
       # Setup resumable.js in the UI
 
       # This assigns a file drop zone to the "file table"
-      myData.resumable.assignDrop $(".fileDrop")
+      myData.resumable.assignDrop $(".#{myData.root}DropZone")
 
       # When a file is added
       myData.resumable.on 'fileAdded', (file) ->
@@ -68,52 +72,55 @@ if Meteor.isClient
    #####################
    # UI template helpers
 
-   Template.collTest.events
+   Template.testApp.helpers
+      loginToken: () ->
+         Meteor.userId()
+         Accounts._storedLoginToken()
+      userId: () ->
+         Meteor.userId()
+      myData: () -> myData
+
+
+   fileTableHelpers =
+      dataEntries: () ->
+         # Reactively populate the table
+         this.find({})
+
+      owner: () ->
+         this.metadata?._auth?.owner
+
+      id: () ->
+         "#{this._id}"
+
+      uploadStatus: () ->
+         percent = Session.get "#{this._id}"
+         unless percent?
+            "Processing..."
+         else
+            "Uploading..."
+
+      formattedLength: () ->
+         numeral(this.length).format('0.0b')
+
+      uploadProgress: () ->
+         percent = Session.get "#{this._id}"
+
+      isImage: () ->
+         types =
+            'image/jpeg': true
+            'image/png': true
+            'image/gif': true
+            'image/tiff': true
+         types[this.contentType]?
+
+   fileTableEvents =
       # Wire up the event to remove a file by clicking the `X`
       'click .del-file': (e, t) ->
          # Just the remove method does it all
-         myData.remove {_id: this._id}
+         t.data.remove {_id: this._id}
 
-   Template.collTest.dataEntries = () ->
-      # Reactively populate the table
-      myData.find({})
-
-   Template.collTest.owner = () ->
-      this.metadata?._auth?.owner
-
-   Template.collTest.id = () ->
-      "#{this._id}"
-
-   Template.collTest.link = () ->
-      return myData.baseURL + "/" + this.md5
-
-   Template.collTest.uploadStatus = () ->
-      percent = Session.get "#{this._id}"
-      unless percent?
-         "Processing..."
-      else
-         "Uploading..."
-
-   Template.collTest.formattedLength = () ->
-      numeral(this.length).format('0.0b')
-
-   Template.collTest.uploadProgress = () ->
-      percent = Session.get "#{this._id}"
-
-   Template.collTest.isImage = () ->
-      types =
-         'image/jpeg': true
-         'image/png': true
-         'image/gif': true
-         'image/tiff': true
-      types[this.contentType]?
-
-   Template.collTest.loginToken = () ->
-      Meteor.userId()
-      Accounts._storedLoginToken()
-
-   Template.collTest.userId = () ->
-      Meteor.userId()
+   Template.fileTable.helpers fileTableHelpers
+   Template.fileTable.events fileTableEvents
 
 ############################################################
 # Server-only code
@@ -122,6 +129,9 @@ if Meteor.isClient
 if Meteor.isServer
 
    Meteor.startup () ->
+
+      Meteor.publish 'allJobs', () ->
+         myJobs.find({})
 
       # Only publish files owned by this userId, and ignore temp file chunks used by resumable
       Meteor.publish 'allData', (clientUserId) ->

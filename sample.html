@@ -7,19 +7,23 @@
 </head>
 <body>
 <div id="fileDropID">
-{{> collTest}}
+{{> testApp}}
 </div>
 </body>
 
-<template name="collTest">
+<template name="testApp">
   <div class="container panel">
-    <h3>fileCollection Test App</h3>
+    <h3>fileCollection + jobCollection Test App</h3>
     <span class="pull-right text-info">UserId: {{userId}} Token: {{loginToken}}</span>
     <div class="loginTemp">
       {{> loginButtons align="right"}}
     </div>
   </div>
-  <div class="container panel fileDrop">
+  {{> fileTable myData}}
+</template>
+
+<template name="fileTable">
+  <div class="container panel {{root}}DropZone">
     <table class="table table-bordered table-striped">
       <thead>
         <tr>
@@ -36,16 +40,16 @@
       {{#each dataEntries}}
         <tr>
           <td>
-            <a href="{{link}}?download=true">{{filename}}</a>
+            <a href="{{../baseURL}}/{{md5}}?download=true">{{filename}}</a>
             <button type="button" class="close del-file" aria-hidden="true">&times;</button>
           </td>
           <td>{{id}}</td>
           <td>
-          	{{#if owner}}
-          		{{owner}}
-          	{{else}}
-          		<span class="text-muted">No owner</span>
-          	{{/if}}
+            {{#if owner}}
+              {{owner}}
+            {{else}}
+              <span class="text-muted">No owner</span>
+            {{/if}}
           </td>
           <td>
             {{#if length}}
@@ -63,7 +67,7 @@
           <td>{{md5}}</td>
           <td>
             {{#if isImage}}
-                <a href="{{link}}"><img class="img-thumbnail" alt="[ preview of {{filename}} will display here ]" src="{{link}}" width="150"></a>
+                <a href="{{../baseURL}}/{{md5}}"><img class="img-thumbnail" alt="[ preview of {{filename}} will display here ]" src="{{../baseURL}}/{{md5}}" width="150"></a>
             {{else}}
                <span class="text-muted">No preview</span>
             {{/if}}
