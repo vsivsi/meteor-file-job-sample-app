@@ -20,7 +20,10 @@
     </div>
   </div>
   {{> fileTable myData}}
-  {{> jobTable}}
+  <div class="container panel">
+    {{> jobControls}}
+    {{> jobTable}}
+  </div>
 </template>
 
 <template name="fileTable">
@@ -84,8 +87,19 @@
   </div>
 </template>
 
+<template name="jobControls">
+  <div class="panel">
+    <button type="button" class="btn btn-success clear-completed">Clear Completed</button>
+    <button type="button" class="btn btn-default pause-queue" data-toggle="button">Pause all</button>
+    <button type="button" class="btn btn-info restart-queue">Restart all</button>
+    <button type="button" class="btn btn-warning cancel-queue">Cancel all</button>
+    <button type="button" class="btn btn-danger remove-queue">Remove all</button>
+    <button type="button" class="btn btn-danger pull-right stop-queue">Shutdown Queue</button>
+  </div>
+</template>
+
 <template name="jobTable">
-  <div class="container panel">
+  <div class="panel">
     <table class="table table-bordered table-striped">
       <thead>
         <tr>

@@ -221,13 +221,71 @@ if Meteor.isClient
       resumable: () ->
          this.status is 'paused'
 
+
+   Template.jobControls.events
+
+      'click .clear-completed': (e, t) ->
+         console.log "clear completed"
+         ids = []
+         myJobs.find({ status: 'completed' },{ fields: { _id: 1 }}).forEach (d) -> ids.push d._id
+         console.log "clearing: #{ids.length} jobs"
+         myJobs.removeJobs(ids) if ids.length > 0
+
+      'click .pause-queue': (e, t) ->
+         ids = []
+         if $(e.target).hasClass 'active'
+            console.log "resume queue"
+            myJobs.find({ status: 'paused' },{ fields: { _id: 1 }}).forEach (d) -> ids.push d._id
+            console.log "resuming: #{ids.length} jobs"
+            myJobs.resumeJobs(ids) if ids.length > 0
+         else
+            console.log "pause queue"
+            myJobs.find({ status: { $in: myJobs.jobStatusPausable }}, { fields: { _id: 1 }}).forEach (d) -> ids.push d._id
+            console.log "pausing: #{ids.length} jobs"
+            myJobs.pauseJobs(ids) if ids.length > 0
+
+      'click .stop-queue': (e, t) ->
+         unless $(e.target).hasClass 'active'
+            console.log "stop queue"
+            myJobs.stopJobs()
+         else
+            console.log "restart queue"
+            myJobs.stopJobs(0)
+
+      'click .cancel-queue': (e, t) ->
+         console.log "cancel all"
+         ids = []
+         myJobs.find({ status: { $in: myJobs.jobStatusCancellable } }).forEach (d) -> ids.push d._id
+         console.log "cancelling: #{ids.length} jobs"
+         myJobs.cancelJobs(ids) if ids.length > 0
+
+      'click .restart-queue': (e, t) ->
+         console.log "restart all"
+         ids = []
+         myJobs.find({ status: { $in: myJobs.jobStatusRestartable } }).forEach (d) -> ids.push d._id
+         console.log "restarting: #{ids.length} jobs"
+         myJobs.restartJobs(ids, (e, r) -> console.log("Restart returned", r)) if ids.length > 0
+
+      'click .remove-queue': (e, t) ->
+         console.log "remove all"
+         ids = []
+         myJobs.find({ status: { $in: myJobs.jobStatusRemovable } }).forEach (d) -> ids.push d._id
+         console.log "removing: #{ids.length} jobs"
+         myJobs.removeJobs(ids) if ids.length > 0
+
 ############################################################
 # Server-only code
 ############################################################
 
 if Meteor.isServer
 
+   myJobs.setLogStream process.stdout
+   myJobs.allow
+      admin: (userId, method, params) -> return userId?
+
    Meteor.startup () ->
+
+      myJobs.startJobs()
 
       Meteor.publish 'allJobs', () ->
          myJobs.find({})
