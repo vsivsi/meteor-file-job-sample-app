@@ -21,6 +21,12 @@ myJobs = JobCollection 'queue'
 
 if Meteor.isClient
 
+   imageTypes =
+      'image/jpeg': true
+      'image/png': true
+      'image/gif': true
+      'image/tiff': true
+
    Meteor.subscribe 'allJobs'
 
    Meteor.startup () ->
@@ -37,21 +43,22 @@ if Meteor.isClient
 
       # When a file is added
       myData.resumable.on 'fileAdded', (file) ->
-         # Keep track of its progress reactivaly in a session variable
-         Session.set file.uniqueIdentifier, 0
-         # Create a new file in the file collection to upload to
-         myData.insert({
-               _id: file.uniqueIdentifier    # This is the ID resumable will use
-               filename: file.fileName
-               contentType: file.file.type
-            },
-            (err, _id) ->
-               if err
-                  console.warn "File creation failed!", err
-                  return
-               # Once the file exists on the server, start uploading
-               myData.resumable.upload()
-         )
+         if imageTypes[file.file.type]
+            # Keep track of its progress reactivaly in a session variable
+            Session.set file.uniqueIdentifier, 0
+            # Create a new file in the file collection to upload to
+            myData.insert({
+                  _id: file.uniqueIdentifier    # This is the ID resumable will use
+                  filename: file.fileName
+                  contentType: file.file.type
+               },
+               (err, _id) ->
+                  if err
+                     console.warn "File creation failed!", err
+                     return
+                  # Once the file exists on the server, start uploading
+                  myData.resumable.upload()
+            )
 
       # Update the upload progress session variable
       myData.resumable.on 'fileProgress', (file) ->
