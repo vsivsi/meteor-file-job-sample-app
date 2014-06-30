@@ -7,7 +7,10 @@
     	"git": "https://github.com/vsivsi/meteor-job-collection.git",
     	"branch": "master"
     },
-    "fileCollection": {},
+    "fileCollection": {
+    	"git": "https://github.com/vsivsi/meteor-file-collection.git",
+    	"branch": "master"
+    },
     "moment": {}
   }
 }
