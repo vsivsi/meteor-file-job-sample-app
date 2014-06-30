@@ -298,6 +298,7 @@ if Meteor.isClient
 if Meteor.isServer
 
    myJobs.setLogStream process.stdout
+   myJobs.promote 2500
 
    Meteor.startup () ->
 
@@ -448,5 +449,5 @@ if Meteor.isServer
             job.done()
             cb null
 
-      workers = myJobs.processJobs 'makeThumb', { concurrency: 2 }, worker
+      workers = myJobs.processJobs 'makeThumb', { concurrency: 2, pollInterval: 2500 }, worker
 
