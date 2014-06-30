@@ -162,7 +162,7 @@ if Meteor.isClient
       'click .rerun-job': (e, t) ->
          console.log "Rerunning job: #{this._id}"
          job = myJobs.makeJob this
-         job.rerun() if job
+         job.rerun({ wait: 15000 }) if job
       'click .pause-job': (e, t) ->
          console.log "Pausing job: #{this._id}"
          job = myJobs.makeJob this
@@ -306,6 +306,7 @@ if Meteor.isServer
    myJobs.setLogStream process.stdout
    myJobs.allow
       manager: (userId, method, params) -> return userId?
+      jobRerun: (userId, method, params) -> return userId?
 
    Meteor.startup () ->
 
@@ -367,7 +368,7 @@ if Meteor.isServer
                inputFileId: file._id
                outputFileId: outputFileId
             )
-            if jobId = job.delay(5000).retry({ retryWait: 20000, retries: 10 }).save()
+            if jobId = job.delay(5000).retry({ wait: 20000, retries: 10 }).save()
                myData.update({ _id: file._id }, { $set: { 'metadata._Job': jobId, 'metadata.thumb': outputFileId } })
                myData.update({ _id: outputFileId }, { $set: { 'metadata._Job': jobId, 'metadata.thumbOf': file._id } })
             else
