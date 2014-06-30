@@ -338,6 +338,9 @@ if Meteor.isServer
             numMatches = myJobs.find({ _id: id, 'data.owner': userId }).count()
             return numMatches is 1
 
+         stopJobs: (userId, method, params) ->
+            return userId?
+
       # Allow rules for security. Without these, no writes would be allowed by default
       myData.allow
          insert: (userId, file) ->

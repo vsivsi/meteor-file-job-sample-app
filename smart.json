@@ -3,7 +3,10 @@
     "bootstrap-3": {},
     "jquery-cookie": {},
     "numeral": {},
-    "jobCollection": {},
+    "jobCollection": {
+    	"git": "https://github.com/vsivsi/meteor-job-collection.git",
+    	"branch": "master"
+    },
     "fileCollection": {},
     "moment": {}
   }
