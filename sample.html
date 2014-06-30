@@ -19,76 +19,93 @@
       {{> loginButtons align="right"}}
     </div>
   </div>
+  {{> gallery myData}}
   {{> fileTable myData}}
-  <div class="container panel">
-    {{> jobControls}}
-    {{> jobTable}}
+  {{> jobTable}}
+</template>
+
+<template name="gallery">
+  <div class="container panel panel-default">
+    <div class="panel-heading"><h4>Image gallery</h4></div>
+    <div class="panel-body {{root}}DropZone">
+      <div class="row">
+        {{#each dataEntries}}
+          <div class="col-sm-6 col-md-2">
+            <div class="thumbnail">
+              {{#if isImage}}
+                <a href="{{../baseURL}}/{{md5}}"><img class="img-thumbnail" alt="[ preview of {{shortFilename}} will display here ]" src="{{../baseURL}}/{{md5}}" width="150"></a>
+                <div class="caption text-center">{{shortFilename}}</div>
+              {{else}}
+                <span class="text-muted text-center">No preview</span>
+              {{/if}}
+            </div>
+          </div>
+        {{else}}
+            <p class="text-info text-center">No images in gallery, drag some files here to upload</p>
+        {{/each}}
+      </div>
+    </div>
   </div>
 </template>
 
 <template name="fileTable">
-  <div class="container panel {{root}}DropZone">
-    <table class="table table-bordered table-striped">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>ID</th>
-          <th>Owner</th>
-          <th>Size</th>
-          <th>Type</th>
-          <th>Checksum</th>
-          <th>Preview</th>
-        </tr>
-      </thead>
-      <tbody>
-      {{#each dataEntries}}
-        <tr>
-          <td>
-            <a href="{{../baseURL}}/{{md5}}?download=true">{{filename}}</a>
-            <button type="button" class="close del-file" aria-hidden="true">&times;</button>
-          </td>
-          <td>{{id}}</td>
-          <td>
-            {{#if owner}}
-              {{owner}}
-            {{else}}
-              <span class="text-muted">No owner</span>
-            {{/if}}
-          </td>
-          <td>
-            {{#if length}}
-              {{formattedLength}}
-            {{else}}
-              {{uploadStatus}}
-              <div class="progress">
-                <div class="progress-bar" role="progressbar" min-width="60px" aria-valuenow="{{uploadProgress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{uploadProgress}}%;">
-                    <span class="text-muted">{{uploadProgress}}%</span>
+  <div class="container panel panel-default">
+    <div class="panel-heading"><h4>File Collection</h4></div>
+    <div class="panel-body {{root}}DropZone">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>ID</th>
+            <th>Owner</th>
+            <th>Size</th>
+            <th>Type</th>
+            <th>Checksum</th>
+          </tr>
+        </thead>
+        <tbody>
+        {{#each dataEntries}}
+          <tr>
+            <td>
+              <a href="{{../baseURL}}/{{md5}}?download=true">{{shortFilename 28}}</a>
+              <button type="button" class="close del-file" aria-hidden="true">&times;</button>
+            </td>
+            <td>{{id}}</td>
+            <td>
+              {{#if owner}}
+                {{owner}}
+              {{else}}
+                <span class="text-muted">No owner</span>
+              {{/if}}
+            </td>
+            <td>
+              {{#if length}}
+                {{formattedLength}}
+              {{else}}
+                {{uploadStatus}}
+                <div class="progress">
+                  <div class="progress-bar" role="progressbar" min-width="60px" aria-valuenow="{{uploadProgress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{uploadProgress}}%;">
+                      <span class="text-muted">{{uploadProgress}}%</span>
+                  </div>
                 </div>
-              </div>
-            {{/if}}
-          </td>
-          <td>{{contentType}}</td>
-          <td>{{md5}}</td>
-          <td>
-            {{#if isImage}}
-                <a href="{{../baseURL}}/{{md5}}"><img class="img-thumbnail" alt="[ preview of {{filename}} will display here ]" src="{{../baseURL}}/{{md5}}" width="150"></a>
-            {{else}}
-               <span class="text-muted">No preview</span>
-            {{/if}}
-          </td>
-        </tr>
-      {{else}}
-        <tr><td colspan="20" align=center>
-          <span class="text-info">No files in collection, drag one here to upload</span>
-        </td></tr>
-      {{/each}}
-      </tbody>
-    </table>
+              {{/if}}
+            </td>
+            <td>{{contentType}}</td>
+            <td>{{md5}}</td>
+          </tr>
+        {{else}}
+          <tr><td colspan="20" align=center>
+            <span class="text-info">No files in collection...</span>
+          </td></tr>
+        {{/each}}
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
 <template name="jobControls">
-  <div class="panel">
+  <div class="panel-body">
     <button type="button" class="btn btn-success clear-completed">
       <span class="glyphicon glyphicon-ok"></span> Clear Completed
     </button>
@@ -111,83 +128,87 @@
 </template>
 
 <template name="jobTable">
-  <div class="panel">
-    <table class="table table-bordered table-striped">
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>ID</th>
-          <th>Run at</th>
-          <th>Updated</th>
-          <th>Pri</th>
-          <th>Dep</th>
-          <th>Attempts</th>
-          <th>Repeats</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-      {{#each jobEntries}}
-        <tr>
-          <td>{{type}}</td>
-          <td>{{jobId}}</td>
-          <td class="{{futurePast}}">{{runAt}}</td>
-          <td>{{lastUpdated}}</td>
-          <td>{{priority}}</td>
-          <td>{{numDepends}} / {{numResolved}}</td>
-          <td>{{retried}} / {{numRetries}}</td>
-          <td>{{repeated}} / {{numRepeats}}</td>
-          <td>
-            {{#if running}}
-              <div class="progress">
-                <div class="progress-bar progress-bar-info" role="progressbar" min-width="60px" aria-valuenow="{{progress.percent}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progress.percent}}%;">
-                  <span class="text-primary text-center">{{progress.percent}}%</span>
+  <div class="container panel panel-default">
+    <div class="panel-heading"><h4>Job Collection</h4></div>
+    {{> jobControls}}
+    <div class="panel-body">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>ID</th>
+            <th>Run at</th>
+            <th>Updated</th>
+            <th>Pri</th>
+            <th>Dep</th>
+            <th>Attempts</th>
+            <th>Repeats</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {{#each jobEntries}}
+          <tr>
+            <td>{{type}}</td>
+            <td>{{jobId}}</td>
+            <td class="{{futurePast}}">{{runAt}}</td>
+            <td>{{lastUpdated}}</td>
+            <td>{{priority}}</td>
+            <td>{{numDepends}} / {{numResolved}}</td>
+            <td>{{retried}} / {{numRetries}}</td>
+            <td>{{repeated}} / {{numRepeats}}</td>
+            <td>
+              {{#if running}}
+                <div class="progress">
+                  <div class="progress-bar progress-bar-info" role="progressbar" min-width="60px" aria-valuenow="{{progress.percent}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progress.percent}}%;">
+                    <span class="text-primary text-center">{{progress.percent}}%</span>
+                  </div>
                 </div>
-              </div>
-            {{else}}
-              <span class="label label-{{statusBG}}">{{status}}</span>
-            {{/if}}
-          </td>
-          <td><p>
-            {{#if pausable}}
-              <button type="button" class="btn pause-job btn-default btn-sm" aria-hidden="true">
-                <span class="glyphicon glyphicon-pause"></span>
-              </button>
-            {{/if}}
-            {{#if resumable}}
-              <button type="button" class="btn resume-job btn-default btn-sm" aria-hidden="true">
-                <span class="glyphicon glyphicon-play"></span>
-              </button>
-            {{/if}}
-            {{#if restartable}}
-              <button type="button" class="btn restart-job btn-info btn-sm" aria-hidden="true">
-                <span class="glyphicon glyphicon-repeat"></span>
-              </button>
-            {{/if}}
-            {{#if rerunable}}
-              <button type="button" class="btn rerun-job btn-info btn-sm" aria-hidden="true">
-                <span class="glyphicon glyphicon-refresh"></span>
-              </button>
-            {{/if}}
-            {{#if cancellable}}
-              <button type="button " class="btn cancel-job btn-warning btn-sm" aria-hidden="true">
-                <span class="glyphicon glyphicon-ban-circle"></span>
-              </button>
-            {{/if}}
-            {{#if removable}}
-              <button type="button" class="btn remove-job btn-danger btn-sm" aria-hidden="true">
-                <span class="glyphicon glyphicon-remove"></span>
-              </button>
-            {{/if}}
-          </p></td>
-        </tr>
-      {{else}}
-        <tr><td colspan="20" align=center>
-          <span class="text-info">No jobs in collection...</span>
-        </td></tr>
-      {{/each}}
-      </tbody>
-    </table>
+              {{else}}
+                <span class="label label-{{statusBG}}">{{status}}</span>
+              {{/if}}
+            </td>
+            <td><p>
+              {{#if pausable}}
+                <button type="button" class="btn pause-job btn-default btn-sm" aria-hidden="true">
+                  <span class="glyphicon glyphicon-pause"></span>
+                </button>
+              {{/if}}
+              {{#if resumable}}
+                <button type="button" class="btn resume-job btn-default btn-sm" aria-hidden="true">
+                  <span class="glyphicon glyphicon-play"></span>
+                </button>
+              {{/if}}
+              {{#if restartable}}
+                <button type="button" class="btn restart-job btn-info btn-sm" aria-hidden="true">
+                  <span class="glyphicon glyphicon-repeat"></span>
+                </button>
+              {{/if}}
+              {{#if rerunable}}
+                <button type="button" class="btn rerun-job btn-info btn-sm" aria-hidden="true">
+                  <span class="glyphicon glyphicon-refresh"></span>
+                </button>
+              {{/if}}
+              {{#if cancellable}}
+                <button type="button " class="btn cancel-job btn-warning btn-sm" aria-hidden="true">
+                  <span class="glyphicon glyphicon-ban-circle"></span>
+                </button>
+              {{/if}}
+              {{#if removable}}
+                <button type="button" class="btn remove-job btn-danger btn-sm" aria-hidden="true">
+                  <span class="glyphicon glyphicon-remove"></span>
+                </button>
+              {{/if}}
+            </p></td>
+          </tr>
+        {{else}}
+          <tr><td colspan="20" align=center>
+            <span class="text-info">No jobs in collection...</span>
+          </td></tr>
+        {{/each}}
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>

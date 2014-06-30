@@ -4,11 +4,12 @@ body {
   background: url('pattern_130.gif');
 }
 
-.panel {
+.panel, .panel-heading, .panel-body {
   position: relative;
-  background: #fff;
+  background: #f7f7f7;
   margin-top: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,.5);
+  margin-bottom: 10px;
+  box-shadow: 0 0 7px rgba(0,0,0,.5);
 }
 
 .content {

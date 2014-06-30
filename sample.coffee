@@ -91,6 +91,14 @@ if Meteor.isClient
       id: () ->
          "#{this._id}"
 
+      shortFilename: (w = 16) ->
+         w++ if w % 2
+         w = (w-2)/2
+         if this.filename.length > w
+            this.filename[0..w] + '...' + this.filename[-w-1..-1]
+         else
+            this.filename
+
       uploadStatus: () ->
          percent = Session.get "#{this._id}"
          unless percent?
@@ -117,6 +125,8 @@ if Meteor.isClient
       'click .del-file': (e, t) ->
          # Just the remove method does it all
          t.data.remove {_id: this._id}
+
+   Template.gallery.helpers fileTableHelpers
 
    Template.fileTable.helpers fileTableHelpers
    Template.fileTable.events fileTableEvents
