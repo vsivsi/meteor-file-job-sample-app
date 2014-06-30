@@ -30,8 +30,6 @@ if Meteor.isClient
       'image/gif': true
       'image/tiff': true
 
-   Meteor.subscribe 'allJobs'
-
    Meteor.startup () ->
 
       ################################
@@ -81,6 +79,7 @@ if Meteor.isClient
    Deps.autorun () ->
       userId = Meteor.userId()
       Meteor.subscribe 'allData', userId
+      Meteor.subscribe 'allJobs', userId
       $.cookie 'X-Auth-Token', Accounts._storedLoginToken()
 
    #####################
@@ -127,12 +126,7 @@ if Meteor.isClient
          percent = Session.get "#{this._id}"
 
       isImage: () ->
-         types =
-            'image/jpeg': true
-            'image/png': true
-            'image/gif': true
-            'image/tiff': true
-         types[this.contentType]?
+         imageTypes[this.contentType]?
 
    fileTableEvents =
       # Wire up the event to remove a file by clicking the `X`
@@ -304,20 +298,21 @@ if Meteor.isClient
 if Meteor.isServer
 
    myJobs.setLogStream process.stdout
-   myJobs.allow
-      manager: (userId, method, params) -> return userId?
-      jobRerun: (userId, method, params) -> return userId?
 
    Meteor.startup () ->
 
       myJobs.startJobs()
 
-      Meteor.publish 'allJobs', () ->
-         myJobs.find({})
+      Meteor.publish 'allJobs', (clientUserId) ->
+         # This prevents a race condition on the client between Meteor.userId() and subscriptions to this publish
+         # See: https://stackoverflow.com/questions/24445404/how-to-prevent-a-client-reactive-race-between-meteor-userid-and-a-subscription/24460877#24460877
+         if this.userId is clientUserId
+            return myJobs.find({ 'data.owner': this.userId })
+         else
+            return []
 
       # Only publish files owned by this userId, and ignore temp file chunks used by resumable
       Meteor.publish 'allData', (clientUserId) ->
-
          # This prevents a race condition on the client between Meteor.userId() and subscriptions to this publish
          # See: https://stackoverflow.com/questions/24445404/how-to-prevent-a-client-reactive-race-between-meteor-userid-and-a-subscription/24460877#24460877
          if this.userId is clientUserId
@@ -327,6 +322,21 @@ if Meteor.isServer
 
       # Don't allow users to modify the user docs
       Meteor.users.deny({update: () -> true })
+
+      # Only allow job owners to manage or rerun jobs
+      myJobs.allow
+         manager: (userId, method, params) ->
+            ids = params[0]
+            unless typeof ids is 'object' and ids instanceof Array
+               ids = [ ids ]
+            numIds = ids.length
+            numMatches = myJobs.find({ _id: { $in: ids }, 'data.owner': userId }).count()
+            return numMatches is numIds
+
+         jobRerun: (userId, method, params) ->
+            id = params[0]
+            numMatches = myJobs.find({ _id: id, 'data.owner': userId }).count()
+            return numMatches is 1
 
       # Allow rules for security. Without these, no writes would be allowed by default
       myData.allow
@@ -363,6 +373,7 @@ if Meteor.isServer
                contentType: 'image/png'
                metadata: file.metadata
             job = myJobs.createJob('makeThumb',
+               owner: file.metadata._auth.owner
                inputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/#{file._id}")
                outputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/put/#{outputFileId}")
                inputFileId: file._id
