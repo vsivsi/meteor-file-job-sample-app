@@ -89,12 +89,24 @@
 
 <template name="jobControls">
   <div class="panel">
-    <button type="button" class="btn btn-success clear-completed">Clear Completed</button>
-    <button type="button" class="btn btn-default pause-queue" data-toggle="button">Pause all</button>
-    <button type="button" class="btn btn-info restart-queue">Restart all</button>
-    <button type="button" class="btn btn-warning cancel-queue">Cancel all</button>
-    <button type="button" class="btn btn-danger remove-queue">Remove all</button>
-    <button type="button" class="btn btn-danger pull-right stop-queue">Shutdown Queue</button>
+    <button type="button" class="btn btn-success clear-completed">
+      <span class="glyphicon glyphicon-ok"></span> Clear Completed
+    </button>
+    <button type="button" class="btn btn-default pause-queue" data-toggle="button">
+      <span class="glyphicon glyphicon-pause"></span> Pause all
+    </button>
+    <button type="button" class="btn btn-info restart-queue">
+      <span class="glyphicon glyphicon-repeat"></span> Restart all
+    </button>
+    <button type="button" class="btn btn-warning cancel-queue">
+      <span class="glyphicon glyphicon-ban-circle"></span> Cancel all
+    </button>
+    <button type="button" class="btn btn-danger remove-queue">
+      <span class="glyphicon glyphicon-remove"></span> Remove all
+    </button>
+    <button type="button" class="btn btn-danger pull-right stop-queue">
+      <span class="glyphicon glyphicon-off"></span> Shutdown Queue
+    </button>
   </div>
 </template>
 
