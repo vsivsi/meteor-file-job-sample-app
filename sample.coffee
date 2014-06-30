@@ -305,7 +305,7 @@ if Meteor.isServer
 
    myJobs.setLogStream process.stdout
    myJobs.allow
-      admin: (userId, method, params) -> return userId?
+      manager: (userId, method, params) -> return userId?
 
    Meteor.startup () ->
 
@@ -352,22 +352,10 @@ if Meteor.isServer
                return false
             true
 
-      # When a file's data changes, call the appropriate functions
-      # for the removal of the old file and addition of the new.
-      changedFileJob = (oldFile, newFile) ->
-         console.warn "Changed file!", oldFile._id
-         if oldFile.md5 isnt newFile.md5
-            if oldFile.metadata._Job?
-               # Only call if this file has a job outstanding
-               console.warn 'Outstanding job!'
-               removedFileJob oldFile
-            addedFileJob newFile
-         else
-            console.warn "File data didn't change"
-
       # Create a job to make a thumbnail for each newly uploaded image
       addedFileJob = (file) ->
          console.warn "Added file!", file
+         # Don't make new jobs for files tha already have them
          unless file?.metadata?._Job?
             outputFileId = myData.insert
                filename: "tn_#{file.filename}.png"
@@ -399,6 +387,20 @@ if Meteor.isServer
                console.log "No cancellable job found!", file._id
          thumb = myData.remove { _id: file.metadata.thumb }
 
+      # When a file's data changes, call the appropriate functions
+      # for the removal of the old file and addition of the new.
+      changedFileJob = (oldFile, newFile) ->
+         console.warn "Changed file!", oldFile._id
+         if oldFile.md5 isnt newFile.md5
+            if oldFile.metadata._Job?
+               # Only call if this file has a job outstanding
+               console.warn 'Outstanding job!'
+               removedFileJob oldFile
+            addedFileJob newFile
+         else
+            console.warn "File data didn't change"
+
+      # Watch for changes to uploaded image files
       fileObserve = myData.find(
          md5:
             $ne: 'd41d8cd98f00b204e9800998ecf8427e'  # md5 sum for zero length file
@@ -411,3 +413,25 @@ if Meteor.isServer
          changed: changedFileJob
          removed: removedFileJob
       )
+
+      worker = (job, cb) ->
+         job.prog ?= 0
+         if job.prog < 100
+            job.prog += 25
+            console.log "In worker:", job.prog
+            result = job.progress job.prog, 100
+            if result and Math.random() > 0.25
+               console.log "Job progress good, continuing job"
+               job.log "Starting next phase: #{job.prog}"
+               console.log "Job log good, continuing job"
+               Meteor.setTimeout worker.bind(null, job, cb), 5000
+            else
+               console.warn "Job removed or shutting down, abort job!"
+               job.fail("Job gone")
+               cb null
+         else
+            job.done()
+            cb null
+
+      workers = myJobs.processJobs 'makeThumb', { concurrency: 2 }, worker
+

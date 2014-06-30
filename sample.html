@@ -196,9 +196,15 @@
                 </button>
               {{/if}}
               {{#if removable}}
-                <button type="button" class="btn remove-job btn-danger btn-sm" aria-hidden="true">
-                  <span class="glyphicon glyphicon-remove"></span>
-                </button>
+                {{#if rerunable}}
+                  <button type="button" class="btn remove-job btn-success btn-sm" aria-hidden="true">
+                    <span class="glyphicon glyphicon-ok"></span>
+                  </button>
+                {{else}}
+                  <button type="button" class="btn remove-job btn-danger btn-sm" aria-hidden="true">
+                    <span class="glyphicon glyphicon-remove"></span>
+                  </button>
+                {{/if}}
               {{/if}}
             </p></td>
           </tr>
