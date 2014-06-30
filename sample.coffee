@@ -9,7 +9,10 @@
 # Default collection name is 'fs'
 myData = FileCollection('images', {
    resumable: true,     # Enable the resumable.js compatible chunked file upload interface
-   http: [ { method: 'get', path: '/:md5', lookup: (params, query) -> return { md5: params.md5 }}]}
+   http: [
+      { method: 'get', path: '/:_id', lookup: (params, query) -> return { _id: params._id }},
+      { method: 'put', path: '/put/:_id', lookup: (params, query) -> return { _id: params._id }}
+   ]}
    # Define a GET API that uses the md5 sum id files
 )
 
@@ -348,3 +351,63 @@ if Meteor.isServer
             if file.metadata?._auth?.owner and userId isnt file.metadata._auth.owner
                return false
             true
+
+      # When a file's data changes, call the appropriate functions
+      # for the removal of the old file and addition of the new.
+      changedFileJob = (oldFile, newFile) ->
+         console.warn "Changed file!", oldFile._id
+         if oldFile.md5 isnt newFile.md5
+            if oldFile.metadata._Job?
+               # Only call if this file has a job outstanding
+               console.warn 'Outstanding job!'
+               removedFileJob oldFile
+            addedFileJob newFile
+         else
+            console.warn "File data didn't change"
+
+      # Create a job to make a thumbnail for each newly uploaded image
+      addedFileJob = (file) ->
+         console.warn "Added file!", file
+         unless file?.metadata?._Job?
+            outputFileId = myData.insert
+               filename: "tn_#{file.filename}.png"
+               contentType: 'image/png'
+               metadata: file.metadata
+            job = myJobs.createJob('makeThumb',
+               inputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/#{file._id}")
+               outputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/put/#{outputFileId}")
+               inputFileId: file._id
+               outputFileId: outputFileId
+            )
+            if jobId = job.delay(5000).retry({ retryWait: 20000, retries: 10 }).save()
+               myData.update({ _id: file._id }, { $set: { 'metadata._Job': jobId, 'metadata.thumb': outputFileId } })
+               myData.update({ _id: outputFileId }, { $set: { 'metadata._Job': jobId, 'metadata.thumbOf': file._id } })
+            else
+               console.error "Error saving new job for file #{file._id}"
+
+      # If a removed file has an associated cancellable job, cancel it.
+      removedFileJob = (file) ->
+         console.warn "Removed a file!", file._id
+         if file.metadata?._Job
+            if job = myJobs.findOne({_id: file.metadata._Job, status: { $in: myJobs.jobStatusCancellable }},{ fields: { log: 0 }})
+               console.log "Cancelling the job for the removed file!", job._id
+               myJobs.makeJob(job).cancel (err, res) ->
+                  console.warn "Job cancelled!", job._id
+                  myData.remove
+                     _id: job.data.outputFileId
+            else
+               console.log "No cancellable job found!", file._id
+         thumb = myData.remove { _id: file.metadata.thumb }
+
+      fileObserve = myData.find(
+         md5:
+            $ne: 'd41d8cd98f00b204e9800998ecf8427e'  # md5 sum for zero length file
+         'metadata._Resumable':
+            $exists: false
+         'metadata.thumbnailOf':
+            $exists: false
+      ).observe(
+         added: addedFileJob
+         changed: changedFileJob
+         removed: removedFileJob
+      )
