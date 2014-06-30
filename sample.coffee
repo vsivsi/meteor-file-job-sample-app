@@ -28,6 +28,10 @@ if Meteor.isClient
       ################################
       # Setup resumable.js in the UI
 
+      # Prevent default drop behavior (loading a file) outside of the drop zone
+      window.addEventListener 'dragover', ((e) -> e.preventDefault()), false
+      window.addEventListener 'drop', ((e) -> e.preventDefault()), false
+
       # This assigns a file drop zone to the "file table"
       myData.resumable.assignDrop $(".#{myData.root}DropZone")
 
