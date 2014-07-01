@@ -308,6 +308,7 @@ if Meteor.isClient
 if Meteor.isServer
 
    gm = Meteor.require 'gm'
+   exec = Meteor.require('child_process').exec
 
    myJobs.setLogStream process.stdout
    myJobs.promote 2500
@@ -443,34 +444,43 @@ if Meteor.isServer
       )
 
       worker = (job, cb) ->
-
-         outStream = myData.upsertStream { _id: job.data.outputFileId }, {}, (err, file) ->
-            console.warn "Outfile closed"
+         exec 'gm version', Meteor.bindEnvironment (err) ->
             if err
-               job.fail "#{err}"
-            else
-               job.progress 80, 100
-               myData.update { _id: job.data.inputFileId }, { $set: { 'metadata.thumb': job.data.outputFileId } }
-               job.done()
-            cb()
+               console.warn 'Graphicsmagick is not installed!\n', err
+               job.fail "Error running graphicsmagick: #{err}", { fatal: true }
+               return cb()
 
-         unless outStream
-            job.fail 'Output file not found'
-            cb null
+            outStream = myData.upsertStream { _id: job.data.outputFileId }, {}, (err, file) ->
+               console.warn "Outfile closed"
+               if err
+                  job.fail "#{err}"
+               else
+                  job.progress 80, 100
+                  myData.update { _id: job.data.inputFileId }, { $set: { 'metadata.thumb': job.data.outputFileId } }
+                  job.done()
+               cb()
+            unless outStream
+               job.fail 'Output file not found'
+               cb null
 
-         inStream = myData.findOneStream { _id: job.data.inputFileId }
+            inStream = myData.findOneStream { _id: job.data.inputFileId }
+            unless inStream
+               outStream.releaseLock()
+               job.fail 'Input file not found'
+               cb null
 
-         unless inStream
-            outStream.releaseLock()
-            job.fail 'Input file not found'
-            cb null
+            job.progress 20, 100
 
-         job.progress 20, 100
-
-         gm(inStream)
-            .resize(250,250)
-            .stream('png')
-            .pipe(outStream)
+            gm(inStream)
+               .resize(250,250)
+               .stream('png')
+               .pipe(outStream, (err) ->
+                  console.warn 'Error running graphicsmagick:', err
+                  outStream.releaseLock()
+                  inStream.releaseLock()
+                  job.fail "Error running graphicsmagick: #{err}"
+                  cb()
+               )
 
       workers = myJobs.processJobs 'makeThumb', { concurrency: 2, prefetch: 2, pollInterval: 2500 }, worker
 
