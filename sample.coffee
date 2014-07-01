@@ -92,6 +92,7 @@ if Meteor.isClient
       userId: () ->
          Meteor.userId()
       myData: () -> myData
+      myJobs: () -> myJobs
 
    fileTableHelpers =
       owner: () ->
@@ -127,8 +128,7 @@ if Meteor.isClient
    fileTableEvents =
       # Wire up the event to remove a file by clicking the `X`
       'click .del-file': (e, t) ->
-         # Just the remove method does it all
-         t.data.remove {_id: this._id}
+         t.data.remove this._id
 
    Template.gallery.helpers fileTableHelpers
 
@@ -142,10 +142,7 @@ if Meteor.isClient
    Template.fileControls.events
       'click .remove-files': (e, t) ->
          console.log "Removing all files"
-         ids = []
-         this.find({}).forEach (d) -> ids.push d._id
-         for id in ids
-            this.remove { _id: id }
+         this.find({}).forEach ((d) -> this.remove(d._id)), this
 
    Template.fileTable.helpers fileTableHelpers
    Template.fileTable.dataEntries = () ->
@@ -154,37 +151,38 @@ if Meteor.isClient
 
    Template.fileTable.events fileTableEvents
 
-   Template.jobTable.events
-      # Wire up the event to cancel a job by clicking the `X`
+   jobTableEvents =
       'click .cancel-job': (e, t) ->
-         console.log "Cancelling job: #{this._id}"
-         job = myJobs.makeJob this
+         console.log "Cancelling job: #{this._id}", t
+         job = t.data.makeJob this
          job.cancel() if job
       'click .remove-job': (e, t) ->
          console.log "Removing job: #{this._id}"
-         job = myJobs.makeJob this
+         job = t.data.makeJob this
          job.remove() if job
       'click .restart-job': (e, t) ->
          console.log "Restarting job: #{this._id}"
-         job = myJobs.makeJob this
+         job = t.data.makeJob this
          job.restart() if job
       'click .rerun-job': (e, t) ->
          console.log "Rerunning job: #{this._id}"
-         job = myJobs.makeJob this
+         job = t.data.makeJob this
          job.rerun({ wait: 15000 }) if job
       'click .pause-job': (e, t) ->
          console.log "Pausing job: #{this._id}"
-         job = myJobs.makeJob this
+         job = t.data.makeJob this
          job.pause() if job
       'click .resume-job': (e, t) ->
          console.log "Resuming job: #{this._id}"
-         job = myJobs.makeJob this
+         job = t.data.makeJob this
          job.resume() if job
 
-   Template.jobTable.helpers
+   Template.jobTable.events jobTableEvents
+
+   jobTableHelpers =
       jobEntries: () ->
          # Reactively populate the table
-         myJobs.find({})
+         this.find({})
 
       numDepends: () ->
          this.depends?.length
@@ -237,74 +235,71 @@ if Meteor.isClient
          this.status is 'running'
 
       cancellable: () ->
-         this.status in myJobs.jobStatusCancellable
+         this.status in UI._parentData(1).jobStatusCancellable
 
       removable: () ->
-         this.status in myJobs.jobStatusRemovable
+         this.status in UI._parentData(1).jobStatusRemovable
 
       restartable: () ->
-         this.status in myJobs.jobStatusRestartable
+         this.status in UI._parentData(1).jobStatusRestartable
 
       rerunable: () ->
          this.status is 'completed'
 
       pausable: () ->
-         this.status in myJobs.jobStatusPausable
+         this.status in UI._parentData(1).jobStatusPausable
 
       resumable: () ->
          this.status is 'paused'
 
+   Template.jobTable.helpers jobTableHelpers
 
-   Template.jobControls.events
-
+   jobControlsEvents =
       'click .clear-completed': (e, t) ->
          console.log "clear completed"
-         ids = []
-         myJobs.find({ status: 'completed' },{ fields: { _id: 1 }}).forEach (d) -> ids.push d._id
+         ids = t.data.find({ status: 'completed' },{ fields: { _id: 1 }}).map (d) -> d._id
          console.log "clearing: #{ids.length} jobs"
-         myJobs.removeJobs(ids) if ids.length > 0
+         t.data.removeJobs(ids) if ids.length > 0
 
       'click .pause-queue': (e, t) ->
-         ids = []
          if $(e.target).hasClass 'active'
             console.log "resume queue"
-            myJobs.find({ status: 'paused' },{ fields: { _id: 1 }}).forEach (d) -> ids.push d._id
+            ids = t.data.find({ status: 'paused' },{ fields: { _id: 1 }}).map (d) -> d._id
             console.log "resuming: #{ids.length} jobs"
-            myJobs.resumeJobs(ids) if ids.length > 0
+            t.data.resumeJobs(ids) if ids.length > 0
          else
             console.log "pause queue"
-            myJobs.find({ status: { $in: myJobs.jobStatusPausable }}, { fields: { _id: 1 }}).forEach (d) -> ids.push d._id
+            ids = t.data.find({ status: { $in: t.data.jobStatusPausable }}, { fields: { _id: 1 }}).map (d) -> d._id
             console.log "pausing: #{ids.length} jobs"
-            myJobs.pauseJobs(ids) if ids.length > 0
+            t.data.pauseJobs(ids) if ids.length > 0
 
       'click .stop-queue': (e, t) ->
          unless $(e.target).hasClass 'active'
             console.log "stop queue"
-            myJobs.stopJobs()
+            t.data.stopJobs()
          else
             console.log "restart queue"
-            myJobs.stopJobs(0)
+            t.data.stopJobs(0)
 
       'click .cancel-queue': (e, t) ->
          console.log "cancel all"
-         ids = []
-         myJobs.find({ status: { $in: myJobs.jobStatusCancellable } }).forEach (d) -> ids.push d._id
+         ids = t.data.find({ status: { $in: t.data.jobStatusCancellable } }).map (d) -> d._id
          console.log "cancelling: #{ids.length} jobs"
-         myJobs.cancelJobs(ids) if ids.length > 0
+         t.data.cancelJobs(ids) if ids.length > 0
 
       'click .restart-queue': (e, t) ->
          console.log "restart all"
-         ids = []
-         myJobs.find({ status: { $in: myJobs.jobStatusRestartable } }).forEach (d) -> ids.push d._id
+         ids = t.data.find({ status: { $in: t.data.jobStatusRestartable } }).map (d) -> d._id
          console.log "restarting: #{ids.length} jobs"
-         myJobs.restartJobs(ids, (e, r) -> console.log("Restart returned", r)) if ids.length > 0
+         t.data.restartJobs(ids, (e, r) -> console.log("Restart returned", r)) if ids.length > 0
 
       'click .remove-queue': (e, t) ->
          console.log "remove all"
-         ids = []
-         myJobs.find({ status: { $in: myJobs.jobStatusRemovable } }).forEach (d) -> ids.push d._id
+         ids = t.data.find({ status: { $in: t.data.jobStatusRemovable } }).map (d) -> d._id
          console.log "removing: #{ids.length} jobs"
-         myJobs.removeJobs(ids) if ids.length > 0
+         t.data.removeJobs(ids) if ids.length > 0
+
+   Template.jobControls.events jobControlsEvents
 
 ############################################################
 # Server-only code
