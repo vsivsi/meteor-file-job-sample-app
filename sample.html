@@ -48,9 +48,18 @@
   </div>
 </template>
 
+<template name="fileControls">
+  <div class="panel-body">
+    <button type="button" class="btn btn-danger remove-files">
+      <span class="glyphicon glyphicon-remove"></span> Delete all
+    </button>
+  </div>
+</template>
+
 <template name="fileTable">
   <div class="container panel panel-default">
     <div class="panel-heading"><h4>File Collection</h4></div>
+    {{> fileControls}}
     <div class="panel-body">
       <table class="table table-bordered table-striped">
         <thead>

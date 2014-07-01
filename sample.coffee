@@ -139,6 +139,14 @@ if Meteor.isClient
    Template.gallery.thumb = () ->
       "#{this.metadata.thumb}"
 
+   Template.fileControls.events
+      'click .remove-files': (e, t) ->
+         console.log "Removing all files"
+         ids = []
+         this.find({}).forEach (d) -> ids.push d._id
+         for id in ids
+            this.remove { _id: id }
+
    Template.fileTable.helpers fileTableHelpers
    Template.fileTable.dataEntries = () ->
       # Reactively populate the table
