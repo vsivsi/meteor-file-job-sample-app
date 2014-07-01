@@ -30,11 +30,11 @@
     <div class="panel-body {{root}}DropZone">
       <div class="row">
         {{#each dataEntries}}
-          <div class="col-sm-6 col-md-2">
+          <div class="col-sm-6 col-lg-3">
             <div class="thumbnail">
               {{#if isImage}}
-                <a href="{{../baseURL}}/{{id}}"><img class="img-thumbnail" alt="[ preview of {{shortFilename}} will display here ]" src="{{../baseURL}}/{{id}}" width="150"></a>
-                <div class="caption text-center">{{shortFilename}}</div>
+                <a href="{{../baseURL}}/{{id}}"><img class="img-thumbnail" alt="[ preview of {{shortFilename}} will display here ]" src="{{../baseURL}}/{{thumb}}"></a>
+                <div class="caption text-center">{{shortFilename 20}}</div>
               {{else}}
                 <span class="text-muted text-center">No preview</span>
               {{/if}}
@@ -67,7 +67,7 @@
         {{#each dataEntries}}
           <tr>
             <td>
-              <a href="{{../baseURL}}/{{id}}?download=true">{{shortFilename 28}}</a>
+              <a href="{{../baseURL}}/{{id}}?download=true">{{shortFilename 32}}</a>
               <button type="button" class="close del-file" aria-hidden="true">&times;</button>
             </td>
             <td>{{id}}</td>

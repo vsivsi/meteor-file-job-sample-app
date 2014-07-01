@@ -94,10 +94,6 @@ if Meteor.isClient
       myData: () -> myData
 
    fileTableHelpers =
-      dataEntries: () ->
-         # Reactively populate the table
-         this.find({})
-
       owner: () ->
          this.metadata?._auth?.owner
 
@@ -136,7 +132,18 @@ if Meteor.isClient
 
    Template.gallery.helpers fileTableHelpers
 
+   Template.gallery.dataEntries = () ->
+      # Reactively populate the table
+      this.find({ 'metadata.thumb': { $exists: true }})
+
+   Template.gallery.thumb = () ->
+      "#{this.metadata.thumb}"
+
    Template.fileTable.helpers fileTableHelpers
+   Template.fileTable.dataEntries = () ->
+      # Reactively populate the table
+      this.find({})
+
    Template.fileTable.events fileTableEvents
 
    Template.jobTable.events
@@ -297,6 +304,8 @@ if Meteor.isClient
 
 if Meteor.isServer
 
+   gm = Meteor.require 'gm'
+
    myJobs.setLogStream process.stdout
    myJobs.promote 2500
 
@@ -383,9 +392,9 @@ if Meteor.isServer
                inputFileId: file._id
                outputFileId: outputFileId
             )
-            if jobId = job.delay(5000).retry({ wait: 20000, retries: 10 }).save()
-               myData.update({ _id: file._id }, { $set: { 'metadata._Job': jobId, 'metadata.thumb': outputFileId } })
-               myData.update({ _id: outputFileId }, { $set: { 'metadata._Job': jobId, 'metadata.thumbOf': file._id } })
+            if jobId = job.delay(5000).retry({ wait: 20000, retries: 5 }).save()
+               myData.update({ _id: file._id }, { $set: { 'metadata._Job': jobId }})
+               myData.update({ _id: outputFileId }, { $set: { 'metadata._Job': jobId, 'metadata.thumbOf': file._id }})
             else
                console.error "Error saving new job for file #{file._id}"
 
@@ -431,23 +440,34 @@ if Meteor.isServer
       )
 
       worker = (job, cb) ->
-         job.prog ?= 0
-         if job.prog < 100
-            job.prog += 25
-            console.log "In worker:", job.prog
-            result = job.progress job.prog, 100
-            if result and Math.random() > 0.25
-               console.log "Job progress good, continuing job"
-               job.log "Starting next phase: #{job.prog}"
-               console.log "Job log good, continuing job"
-               Meteor.setTimeout worker.bind(null, job, cb), 5000
+
+         outStream = myData.upsertStream { _id: job.data.outputFileId }, {}, (err, file) ->
+            console.warn "Outfile closed"
+            if err
+               job.fail "#{err}"
             else
-               console.warn "Job removed or shutting down, abort job!"
-               job.fail("Job gone")
-               cb null
-         else
-            job.done()
+               job.progress 80, 100
+               myData.update { _id: job.data.inputFileId }, { $set: { 'metadata.thumb': job.data.outputFileId } }
+               job.done()
+            cb()
+
+         unless outStream
+            job.fail 'Output file not found'
             cb null
 
-      workers = myJobs.processJobs 'makeThumb', { concurrency: 2, pollInterval: 2500 }, worker
+         inStream = myData.findOneStream { _id: job.data.inputFileId }
+
+         unless inStream
+            outStream.releaseLock()
+            job.fail 'Input file not found'
+            cb null
+
+         job.progress 20, 100
+
+         gm(inStream)
+            .resize(250,250)
+            .stream('png')
+            .pipe(outStream)
+
+      workers = myJobs.processJobs 'makeThumb', { concurrency: 2, prefetch: 2, pollInterval: 2500 }, worker
 
