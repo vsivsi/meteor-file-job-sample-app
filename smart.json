@@ -5,6 +5,7 @@
     "numeral": {},
     "jobCollection": {},
     "fileCollection": {},
-    "moment": {}
+    "moment": {},
+    "iron-router": {}
   }
 }
