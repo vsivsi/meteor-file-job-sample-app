@@ -18,6 +18,15 @@ myData = FileCollection('images', {
 
 myJobs = JobCollection 'queue'
 
+Router.map () ->
+   this.route 'home',
+      path: '/'
+      data: () -> myData
+   this.route 'files',
+      data: () -> myData
+   this.route 'jobs',
+      data: () -> myJobs
+
 ############################################################
 # Client-only code
 ############################################################
@@ -38,9 +47,6 @@ if Meteor.isClient
       # Prevent default drop behavior (loading a file) outside of the drop zone
       window.addEventListener 'dragover', ((e) -> e.preventDefault()), false
       window.addEventListener 'drop', ((e) -> e.preventDefault()), false
-
-      # This assigns a file drop zone to the "file table"
-      myData.resumable.assignDrop $(".#{myData.root}DropZone")
 
       # When a file is added
       myData.resumable.on 'fileAdded', (file) ->
@@ -85,14 +91,15 @@ if Meteor.isClient
    #####################
    # UI template helpers
 
-   Template.testApp.helpers
+   Template.top.helpers
       loginToken: () ->
          Meteor.userId()
          Accounts._storedLoginToken()
       userId: () ->
          Meteor.userId()
-      myData: () -> myData
-      myJobs: () -> myJobs
+
+   Template.nav.active = (pill) ->
+      return "active" if pill is "#{this}"
 
    fileTableHelpers =
       owner: () ->
@@ -139,6 +146,11 @@ if Meteor.isClient
    Template.gallery.thumb = () ->
       "#{this.metadata.thumb}"
 
+   Template.gallery.rendered = () ->
+      # This assigns a file drop zone to the "file table"
+      console.log "assigning client", $(".#{myData.root}DropZone"), this
+      this.data.resumable.assignDrop $(".#{myData.root}DropZone")
+
    Template.fileControls.events
       'click .remove-files': (e, t) ->
          console.log "Removing all files"
@@ -181,6 +193,7 @@ if Meteor.isClient
 
    jobTableHelpers =
       jobEntries: () ->
+         console.log "jobEntries", this
          # Reactively populate the table
          this.find({})
 
@@ -234,20 +247,20 @@ if Meteor.isClient
       running: () ->
          this.status is 'running'
 
-      cancellable: () ->
-         this.status in UI._parentData(1).jobStatusCancellable
+      cancellable: (parent) ->
+         this.status in parent.jobStatusCancellable
 
-      removable: () ->
-         this.status in UI._parentData(1).jobStatusRemovable
+      removable: (parent) ->
+         this.status in parent.jobStatusRemovable
 
-      restartable: () ->
-         this.status in UI._parentData(1).jobStatusRestartable
+      restartable: (parent) ->
+         this.status in parent.jobStatusRestartable
 
       rerunable: () ->
          this.status is 'completed'
 
-      pausable: () ->
-         this.status in UI._parentData(1).jobStatusPausable
+      pausable: (parent) ->
+         this.status in parent.jobStatusPausable
 
       resumable: () ->
          this.status is 'paused'
