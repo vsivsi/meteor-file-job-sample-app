@@ -157,7 +157,6 @@ if Meteor.isClient
 
    Template.gallery.rendered = () ->
       # This assigns a file drop zone to the "file table"
-      console.log "assigning client", $(".#{myData.root}DropZone"), this
       this.data.resumable.assignDrop $(".#{myData.root}DropZone")
 
    Template.fileControls.events
