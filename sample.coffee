@@ -91,6 +91,14 @@ if Meteor.isClient
    #####################
    # UI template helpers
 
+   shorten = (name, w = 16) ->
+      w++ if w % 2
+      w = (w-2)/2
+      if name.length > w
+         name[0..w] + '...' + name[-w-1..-1]
+      else
+         name
+
    Template.top.helpers
       loginToken: () ->
          Meteor.userId()
@@ -109,12 +117,7 @@ if Meteor.isClient
          "#{this._id}"
 
       shortFilename: (w = 16) ->
-         w++ if w % 2
-         w = (w-2)/2
-         if this.filename.length > w
-            this.filename[0..w] + '...' + this.filename[-w-1..-1]
-         else
-            this.filename
+         shorten this.filename, w
 
       uploadStatus: () ->
          percent = Session.get "#{this._id}"
@@ -132,6 +135,12 @@ if Meteor.isClient
       isImage: () ->
          imageTypes[this.contentType]?
 
+      altMessage: () ->
+         if this.length isnt 0
+            "Processing thumbnail of #{shorten this.filename, 20}..."
+         else
+            "Uploading #{shorten this.filename, 20}..."
+
    fileTableEvents =
       # Wire up the event to remove a file by clicking the `X`
       'click .del-file': (e, t) ->
@@ -141,7 +150,7 @@ if Meteor.isClient
 
    Template.gallery.dataEntries = () ->
       # Reactively populate the table
-      this.find({ 'metadata.thumb': { $exists: true }})
+      this.find({'metadata.thumbOf': {$exists: false}}, {sort:{filename: 1}})
 
    Template.gallery.thumb = () ->
       "#{this.metadata.thumb}"
@@ -159,7 +168,7 @@ if Meteor.isClient
    Template.fileTable.helpers fileTableHelpers
    Template.fileTable.dataEntries = () ->
       # Reactively populate the table
-      this.find({})
+      this.find({}, {sort:{filename: 1}})
 
    Template.fileTable.events fileTableEvents
 
@@ -193,7 +202,6 @@ if Meteor.isClient
 
    jobTableHelpers =
       jobEntries: () ->
-         console.log "jobEntries", this
          # Reactively populate the table
          this.find({})
 
@@ -218,13 +226,13 @@ if Meteor.isClient
          }[this.status]
 
       numRepeats: () ->
-         if this.repeats > Math.pow 2, 31
+         if this.repeats is parent.Forever
             "∞"
          else
             this.repeats
 
       numRetries: () ->
-         if this.retries > Math.pow 2, 31
+         if this.retries is parent.Forever
             "∞"
          else
             this.retries
@@ -485,7 +493,7 @@ if Meteor.isServer
             job.progress 20, 100
 
             gm(inStream)
-               .resize(250,250)
+               .resize(150,150)
                .stream('png')
                .pipe(outStream, (err) ->
                   console.warn 'Error running graphicsmagick:', err

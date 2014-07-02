@@ -11,6 +11,7 @@ body {
     flex: 1 0 auto;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: space-around;
 }
 
 .panel, .panel-heading, .panel-body {
