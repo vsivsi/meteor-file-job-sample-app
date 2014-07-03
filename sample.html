@@ -197,7 +197,7 @@
               {{/if}}
             </td>
             <td><p>
-              {{#if pausable ..}}
+              {{#if pausable}}
                 <button type="button" class="btn pause-job btn-default btn-sm" aria-hidden="true">
                   <span class="glyphicon glyphicon-pause"></span>
                 </button>
@@ -207,7 +207,7 @@
                   <span class="glyphicon glyphicon-play"></span>
                 </button>
               {{/if}}
-              {{#if restartable ..}}
+              {{#if restartable}}
                 <button type="button" class="btn restart-job btn-info btn-sm" aria-hidden="true">
                   <span class="glyphicon glyphicon-repeat"></span>
                 </button>
@@ -217,12 +217,12 @@
                   <span class="glyphicon glyphicon-refresh"></span>
                 </button>
               {{/if}}
-              {{#if cancellable ..}}
+              {{#if cancellable}}
                 <button type="button " class="btn cancel-job btn-warning btn-sm" aria-hidden="true">
                   <span class="glyphicon glyphicon-ban-circle"></span>
                 </button>
               {{/if}}
-              {{#if removable ..}}
+              {{#if removable}}
                 {{#if rerunable}}
                   <button type="button" class="btn remove-job btn-success btn-sm" aria-hidden="true">
                     <span class="glyphicon glyphicon-ok"></span>
