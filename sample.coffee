@@ -18,14 +18,41 @@ myData = FileCollection('images', {
 
 myJobs = JobCollection 'queue'
 
+# Router.configure () ->
+#    layoutTemplate: 'master'
+
 Router.map () ->
    this.route 'home',
       path: '/'
-      data: () -> myData
+      data: () ->
+         nav: 'gallery'
+         content: myData
+      layoutTemplate: 'master'
+      yieldTemplates:
+         gallery:
+            to: 'content'
+         nav:
+            to: 'nav'
    this.route 'files',
-      data: () -> myData
+      data: () ->
+         nav: 'files'
+         content: myData
+      layoutTemplate: 'master'
+      yieldTemplates:
+         fileTable:
+            to: 'content'
+         nav:
+            to: 'nav'
    this.route 'jobs',
-      data: () -> myJobs
+      data: () ->
+         nav: 'jobs'
+         content: myJobs
+      layoutTemplate: 'master'
+      yieldTemplates:
+         jobTable:
+            to: 'content'
+         nav:
+            to: 'nav'
 
 ############################################################
 # Client-only code

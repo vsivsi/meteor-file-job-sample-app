@@ -8,22 +8,14 @@
 <body>
 </body>
 
-<template name="home">
+<template name="master">
   {{> top}}
-  {{> nav 'home'}}
-  {{> gallery}}
-</template>
-
-<template name="files">
-  {{> top}}
-  {{> nav 'files'}}
-  {{> fileTable this}}
-</template>
-
-<template name="jobs">
-  {{> top}}
-  {{> nav 'jobs'}}
-  {{> jobTable this}}
+  {{#with nav}}
+    {{> yield region='nav'}}
+  {{/with}}
+  {{#with content}}
+    {{> yield region='content'}}
+  {{/with}}
 </template>
 
 <template name="top">
@@ -37,13 +29,13 @@
 </template>
 
 <template name="nav">
-  <div class="container panel">
-    <ul class="nav nav-pills">
-      <li class="{{active 'home'}}"><a href="{{pathFor 'home'}}">Gallery</a></li>
-      <li class="{{active 'files'}}"><a href="{{pathFor 'files'}}">Files</a></li>
-      <li class="{{active 'jobs'}}"><a href="{{pathFor 'jobs'}}">Jobs</a></li>
-    </ul>
-  </div>
+    <div class="container panel">
+      <ul class="nav nav-pills">
+        <li class="{{active 'gallery'}}"><a href="{{pathFor 'home'}}">Gallery</a></li>
+        <li class="{{active 'files'}}"><a href="{{pathFor 'files'}}">Files</a></li>
+        <li class="{{active 'jobs'}}"><a href="{{pathFor 'jobs'}}">Jobs</a></li>
+      </ul>
+    </div>
 </template>
 
 <template name="gallery">
