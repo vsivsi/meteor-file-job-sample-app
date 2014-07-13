@@ -1,5 +1,7 @@
 ## jobCollection (+ fileCollection) Sample App
 
+If you are looking for just the basic fileCollection sample app, it can now be found here: https://github.com/vsivsi/meteor-file-sample-app
+
 This demo app uses [fileCollection's](https://atmospherejs.com/package/fileCollection) built-in support for [Resumable.js](http://www.resumablejs.com/) to allow drag and drop uploading of image files into a basic thumbnail gallery. It uses [jobCollection](https://atmospherejs.com/package/jobCollection) to automate creation of thumbnail images for each uploaded file. Besides the gallery view, the sample app also has "file" and "job" views observe and manage the underlying file and job collections directly and given examples for how basic UI controls for these packages can be implemented.
 
 To set-up, make sure you have [meteorite](https://atmospherejs.com/docs/installing) installed and just clone this repo.
