@@ -1,11 +1,9 @@
-## fileCollection + jobCollection Sample App
+## jobCollection (+ fileCollection) Sample App
 
-This demo app uses fileCollection's built-in support for [Resumable.js](http://www.resumablejs.com/) to allow drag and drop uploading of files. Beyond that, it presents a simple image management grid with basic metadata, user acounts with file ownership, previews of images with click to load, and the ability to download or delete files.
+This demo app uses [fileCollection's](https://atmospherejs.com/package/fileCollection) built-in support for [Resumable.js](http://www.resumablejs.com/) to allow drag and drop uploading of image files into a basic thumbnail gallery. It uses [jobCollection](https://atmospherejs.com/package/jobCollection) to automate creation of thumbnail images for each uploaded file. Besides the gallery view, the sample app also has "file" and "job" views observe and manage the underlying file and job collections directly and given examples for how basic UI controls for these packages can be implemented.
 
-To set-up, make sure you have [meteorite](https://atmospherejs.com/docs/installing) installed.
+To set-up, make sure you have [meteorite](https://atmospherejs.com/docs/installing) installed and just clone this repo.
 
-Then just run `mrt` in this directory and then once the app server is running, point your browser at `http://localhost:3000/`.
+You will also need to have [graphicsmagick](http://www.graphicsmagick.org/) installed on the server for use in making the image thumbnails. This may be easily installed on Mac OS X using MacPorts or Brew, and on Linux using your preferred package manager.
 
-I'm in the process of adding the following functionality as well:
-
-It also uses jobCollection to manage creation of thumbnail images for each uploaded file.
+Then just run `mrt` in this directory and once the app server is running, point your browser at `http://localhost:3000/`.
