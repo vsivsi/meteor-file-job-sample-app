@@ -8,15 +8,7 @@
     "moment": {},
     "iron-router": {
     	"git": "https://github.com/EventedMind/iron-router.git",
-    	"branch": "feature/iron-layout"
-    },
-    "iron-layout": {
-    	"git":"https://github.com/EventedMind/iron-layout.git",
-    	"branch": "master"
-    },
-    "iron-dynamic-template": {
-    	"git":"https://github.com/EventedMind/iron-dynamic-template.git",
-    	"branch": "master"
+    	"branch": "devel"
     }
   }
 }

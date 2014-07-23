@@ -1,7 +1,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<title>Upload test</title>
+	<title>jobCollection test app</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width">
 </head>
@@ -21,7 +21,10 @@
 <template name="top">
   <div class="container panel">
     <h3>fileCollection + jobCollection Test App</h3>
-    <span class="pull-right text-info">UserId: {{userId}} Token: {{loginToken}}</span>
+    {{#if currentUser}}
+      <span class="pull-right"><b>UserId:</b> <span class="text-info">{{userId}}</span>
+      <b>Token:</b> <span class="text-info">{{loginToken}}</span></span>
+    {{/if}}
     <div class="loginTemp">
       {{> loginButtons align="right"}}
     </div>

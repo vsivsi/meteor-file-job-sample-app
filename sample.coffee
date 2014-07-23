@@ -16,7 +16,7 @@ myData = FileCollection('images', {
    # Define a GET API that uses the md5 sum id files
 )
 
-myJobs = JobCollection 'queue'
+myJobs = JobCollection 'queue', { idGeneration: 'MONGO' }
 
 # Router.configure () ->
 #    layoutTemplate: 'master'
@@ -24,7 +24,7 @@ myJobs = JobCollection 'queue'
 Router.map () ->
    this.route 'home',
       path: '/'
-      data: () ->
+      data:
          nav: 'gallery'
          content: myData
       layoutTemplate: 'master'
@@ -34,7 +34,7 @@ Router.map () ->
          nav:
             to: 'nav'
    this.route 'files',
-      data: () ->
+      data:
          nav: 'files'
          content: myData
       layoutTemplate: 'master'
@@ -44,7 +44,7 @@ Router.map () ->
          nav:
             to: 'nav'
    this.route 'jobs',
-      data: () ->
+      data:
          nav: 'jobs'
          content: myJobs
       layoutTemplate: 'master'
@@ -294,6 +294,7 @@ if Meteor.isClient
          this.status is 'completed'
 
       pausable: (parent) ->
+         console.log "In pausable...", UI._parentData(1)
          this.status in UI._parentData(1).jobStatusPausable
 
       resumable: () ->
@@ -436,6 +437,7 @@ if Meteor.isServer
                filename: "tn_#{file.filename}.png"
                contentType: 'image/png'
                metadata: file.metadata
+            console.warn "Thumbnail inserted"
             job = myJobs.createJob('makeThumb',
                owner: file.metadata._auth.owner
                inputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/#{file._id}")
@@ -443,6 +445,7 @@ if Meteor.isServer
                inputFileId: file._id
                outputFileId: outputFileId
             )
+            console.warn "Job created"
             if jobId = job.delay(5000).retry({ wait: 20000, retries: 5 }).save()
                myData.update({ _id: file._id }, { $set: { 'metadata._Job': jobId }})
                myData.update({ _id: outputFileId }, { $set: { 'metadata._Job': jobId, 'metadata.thumbOf': file._id }})
