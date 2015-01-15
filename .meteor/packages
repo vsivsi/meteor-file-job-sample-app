@@ -5,13 +5,16 @@
 
 standard-app-packages
 coffeescript
-bootstrap-3
+mizzao:bootstrap-3
 accounts-ui
 accounts-password
-fileCollection
-jobCollection
-jquery-cookie
-numeral
-moment
-npm
-iron-router
+vsivsi:file-collection
+vsivsi:job-collection
+benjaminrh:jquery-cookie
+mrt:numeral
+momentjs:moment
+meteorhacks:npm
+iron:router
+
+
+npm-container
