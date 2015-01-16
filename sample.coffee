@@ -13,7 +13,6 @@ myData = FileCollection('images', {
       { method: 'get', path: '/:_id', lookup: (params, query) -> return { _id: params._id }},
       { method: 'put', path: '/put/:_id', lookup: (params, query) -> return { _id: params._id }}
    ]}
-   # Define a GET API that uses the md5 sum id files
 )
 
 myJobs = JobCollection 'queue', { idGeneration: 'MONGO' }
@@ -126,6 +125,12 @@ if Meteor.isClient
       else
          name
 
+   shortFilename = (w = 16) ->
+      shorten this.filename, w
+
+   isImage = () ->
+      imageTypes[this.contentType]?
+
    Template.top.helpers
       loginToken: () ->
          Meteor.userId()
@@ -138,14 +143,17 @@ if Meteor.isClient
          return "active" if pill is "#{this}"
 
    fileTableHelpers =
+      dataEntries: () ->
+         # Reactively populate the table
+         this.find({}, {sort:{filename: 1}})
+
       owner: () ->
          this.metadata?._auth?.owner
 
       id: () ->
          "#{this._id}"
 
-      shortFilename: (w = 16) ->
-         shorten this.filename, w
+      shortFilename: shortFilename
 
       uploadStatus: () ->
          percent = Session.get "#{this._id}"
@@ -160,8 +168,7 @@ if Meteor.isClient
       uploadProgress: () ->
          percent = Session.get "#{this._id}"
 
-      isImage: () ->
-         imageTypes[this.contentType]?
+      isImage: isImage
 
       altMessage: () ->
          if this.length isnt 0
@@ -169,12 +176,14 @@ if Meteor.isClient
          else
             "Uploading #{shorten this.filename, 20}..."
 
+   Template.fileTable.helpers fileTableHelpers
+
    fileTableEvents =
       # Wire up the event to remove a file by clicking the `X`
       'click .del-file': (e, t) ->
          t.data.remove this._id
 
-   Template.gallery.helpers fileTableHelpers
+   Template.fileTable.events fileTableEvents
 
    Template.gallery.helpers
       dataEntries: () ->
@@ -184,23 +193,18 @@ if Meteor.isClient
       thumb: () ->
          "#{this.metadata.thumb}"
 
-      rendered: () ->
-         # This assigns a file drop zone to the "file table"
-         this.data.resumable.assignDrop $(".#{myData.root}DropZone")
+      isImage: isImage
+
+      shortFilename: shortFilename
+
+   Template.gallery.rendered = () ->
+      # This assigns a file drop zone to the "file table"
+      this.data.resumable.assignDrop $(".#{myData.root}DropZone")
 
    Template.fileControls.events
       'click .remove-files': (e, t) ->
          console.log "Removing all files"
          this.find({}).forEach ((d) -> this.remove(d._id)), this
-
-   Template.fileTable.helpers fileTableHelpers
-
-   Template.fileTable.helpers 
-      dataEntries: () ->
-         # Reactively populate the table
-         this.find({}, {sort:{filename: 1}})
-
-   Template.fileTable.events fileTableEvents
 
    jobTableEvents =
       'click .cancel-job': (e, t) ->
