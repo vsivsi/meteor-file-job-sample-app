@@ -142,7 +142,7 @@ if Meteor.isClient
       active: (pill) ->
          return "active" if pill is "#{this}"
 
-   fileTableHelpers =
+   Template.fileTable.helpers
       dataEntries: () ->
          # Reactively populate the table
          this.find({}, {sort:{filename: 1}})
@@ -170,9 +170,7 @@ if Meteor.isClient
 
       isImage: isImage
 
-   Template.fileTable.helpers fileTableHelpers
-
-   fileTableEvents =
+   Template.fileTable.events
       # Wire up the event to remove a file by clicking the `X`
       'click .del-file': (e, t) ->
          # Management of thumbnails happens on the server!
@@ -181,12 +179,13 @@ if Meteor.isClient
          else   
             t.data.remove this._id
 
-   Template.fileTable.events fileTableEvents
-
    Template.gallery.helpers
       dataEntries: () ->
          # Reactively populate the table
          this.find({'metadata.thumbOf': {$exists: false}}, {sort:{filename: 1}})
+
+      id: () ->
+         "#{this._id}"
 
       thumb: () ->
          "#{this.metadata.thumb}"
@@ -210,7 +209,7 @@ if Meteor.isClient
          console.log "Removing all files"
          this.find({ 'metadata.thumbOf': {$exists: false} }).forEach ((d) -> this.remove(d._id)), this
 
-   jobTableEvents =
+   Template.jobTable.events
       'click .cancel-job': (e, t) ->
          console.log "Cancelling job: #{this._id}", t
          job = t.data.makeJob this
@@ -236,12 +235,12 @@ if Meteor.isClient
          job = t.data.makeJob this
          job.resume() if job
 
-   Template.jobTable.events jobTableEvents
-
-   jobTableHelpers =
+   Template.jobTable.helpers
       jobEntries: () ->
          # Reactively populate the table
-         this.find({})
+         cur = this.find({})
+         console.warn "job Entries #{cur.count()}"
+         return cur
 
       numDepends: () ->
          this.depends?.length
@@ -312,9 +311,7 @@ if Meteor.isClient
       resumable: () ->
          this.status is 'paused'
 
-   Template.jobTable.helpers jobTableHelpers
-
-   jobControlsEvents =
+   Template.jobControls.events
       'click .clear-completed': (e, t) ->
          console.log "clear completed"
          ids = t.data.find({ status: 'completed' },{ fields: { _id: 1 }}).map (d) -> d._id
@@ -359,8 +356,6 @@ if Meteor.isClient
          console.log "removing: #{ids.length} jobs"
          t.data.removeJobs(ids) if ids.length > 0
 
-   Template.jobControls.events jobControlsEvents
-
 ############################################################
 # Server-only code
 ############################################################
@@ -381,8 +376,11 @@ if Meteor.isServer
          # This prevents a race condition on the client between Meteor.userId() and subscriptions to this publish
          # See: https://stackoverflow.com/questions/24445404/how-to-prevent-a-client-reactive-race-between-meteor-userid-and-a-subscription/24460877#24460877
          if this.userId is clientUserId
-            return myJobs.find({ 'data.owner': this.userId })
+            cursor = myJobs.find({ 'data.owner': this.userId })
+            console.warn "UserID matches #{cursor.count()}"
+            return cursor
          else
+            console.warn "UserID doesn't match"
             return []
 
       # Only publish files owned by this userId, and ignore temp file chunks used by resumable
