@@ -51,10 +51,10 @@
             <div class="thumbnail">
               {{#if isImage}}
                 <a href="{{../baseURL}}/{{id}}"><img class="img-thumbnail" alt="{{altMessage}}" src="{{../baseURL}}/{{thumb}}"></a>
-                <div class="caption text-center">{{shortFilename 16}}</div>
               {{else}}
                 <span class="text-muted text-center">No preview</span>
               {{/if}}
+              <div class="caption text-center">{{shortFilename 16}}</div>
             </div>
           </div>
         {{else}}

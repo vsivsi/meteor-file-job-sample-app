@@ -170,18 +170,16 @@ if Meteor.isClient
 
       isImage: isImage
 
-      altMessage: () ->
-         if this.length isnt 0
-            "Processing thumbnail of #{shorten this.filename, 20}..."
-         else
-            "Uploading #{shorten this.filename, 20}..."
-
    Template.fileTable.helpers fileTableHelpers
 
    fileTableEvents =
       # Wire up the event to remove a file by clicking the `X`
       'click .del-file': (e, t) ->
-         t.data.remove this._id
+         # Management of thumbnails happens on the server!
+         if this.metadata.thumbOf?
+            t.data.remove this.metadata.thumbOf
+         else   
+            t.data.remove this._id
 
    Template.fileTable.events fileTableEvents
 
@@ -197,6 +195,12 @@ if Meteor.isClient
 
       shortFilename: shortFilename
 
+      altMessage: () ->
+         if this.length isnt 0
+            "Processing thumbnail..."
+         else
+            "Uploading..."
+
    Template.gallery.rendered = () ->
       # This assigns a file drop zone to the "file table"
       this.data.resumable.assignDrop $(".#{myData.root}DropZone")
@@ -204,7 +208,7 @@ if Meteor.isClient
    Template.fileControls.events
       'click .remove-files': (e, t) ->
          console.log "Removing all files"
-         this.find({}).forEach ((d) -> this.remove(d._id)), this
+         this.find({ 'metadata.thumbOf': {$exists: false} }).forEach ((d) -> this.remove(d._id)), this
 
    jobTableEvents =
       'click .cancel-job': (e, t) ->
