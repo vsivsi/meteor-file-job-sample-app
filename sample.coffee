@@ -109,7 +109,7 @@ if Meteor.isClient
 
    # Set up an autorun to keep the X-Auth-Token cookie up-to-date and
    # to update the subscription when the userId changes.
-   Deps.autorun () ->
+   Tracker.autorun () ->
       userId = Meteor.userId()
       Meteor.subscribe 'allData', userId
       Meteor.subscribe 'allJobs', userId
