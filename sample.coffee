@@ -133,8 +133,9 @@ if Meteor.isClient
       userId: () ->
          Meteor.userId()
 
-   Template.nav.active = (pill) ->
-      return "active" if pill is "#{this}"
+   Template.nav.helpers
+      active: (pill) ->
+         return "active" if pill is "#{this}"
 
    fileTableHelpers =
       owner: () ->
@@ -175,16 +176,17 @@ if Meteor.isClient
 
    Template.gallery.helpers fileTableHelpers
 
-   Template.gallery.dataEntries = () ->
-      # Reactively populate the table
-      this.find({'metadata.thumbOf': {$exists: false}}, {sort:{filename: 1}})
+   Template.gallery.helpers
+      dataEntries: () ->
+         # Reactively populate the table
+         this.find({'metadata.thumbOf': {$exists: false}}, {sort:{filename: 1}})
 
-   Template.gallery.thumb = () ->
-      "#{this.metadata.thumb}"
+      thumb: () ->
+         "#{this.metadata.thumb}"
 
-   Template.gallery.rendered = () ->
-      # This assigns a file drop zone to the "file table"
-      this.data.resumable.assignDrop $(".#{myData.root}DropZone")
+      rendered: () ->
+         # This assigns a file drop zone to the "file table"
+         this.data.resumable.assignDrop $(".#{myData.root}DropZone")
 
    Template.fileControls.events
       'click .remove-files': (e, t) ->
@@ -192,9 +194,11 @@ if Meteor.isClient
          this.find({}).forEach ((d) -> this.remove(d._id)), this
 
    Template.fileTable.helpers fileTableHelpers
-   Template.fileTable.dataEntries = () ->
-      # Reactively populate the table
-      this.find({}, {sort:{filename: 1}})
+
+   Template.fileTable.helpers 
+      dataEntries: () ->
+         # Reactively populate the table
+         this.find({}, {sort:{filename: 1}})
 
    Template.fileTable.events fileTableEvents
 
