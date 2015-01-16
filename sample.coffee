@@ -1,6 +1,6 @@
 ############################################################################
-#     Copyright (C) 2014 by Vaughn Iverson
-#     fileCollection is free software released under the MIT/X11 license.
+#     Copyright (C) 2014-2015 by Vaughn Iverson
+#     meteor-file-job-sample-app is free software released under the MIT/X11 license.
 #     See included LICENSE file for details.
 ############################################################################
 
@@ -355,8 +355,8 @@ if Meteor.isClient
 
 if Meteor.isServer
 
-   gm = Meteor.require 'gm'
-   exec = Meteor.require('child_process').exec
+   gm = Meteor.npmRequire 'gm'
+   exec = Meteor.npmRequire('child_process').exec
 
    myJobs.setLogStream process.stdout
    myJobs.promote 2500

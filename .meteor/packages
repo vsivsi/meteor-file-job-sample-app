@@ -11,10 +11,8 @@ accounts-password
 vsivsi:file-collection
 vsivsi:job-collection
 benjaminrh:jquery-cookie
-mrt:numeral
+numeral:numeral
 momentjs:moment
 meteorhacks:npm
 iron:router
-
-
 npm-container
