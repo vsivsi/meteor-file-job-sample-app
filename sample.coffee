@@ -7,7 +7,7 @@
 # Both client and server
 
 # Default collection name is 'fs'
-myData = FileCollection('images', {
+myData = new FileCollection('images', {
    resumable: true,     # Enable the resumable.js compatible chunked file upload interface
    http: [
       { method: 'get', path: '/:_id', lookup: (params, query) -> return { _id: params._id }},
@@ -15,7 +15,7 @@ myData = FileCollection('images', {
    ]}
 )
 
-myJobs = JobCollection 'queue', { idGeneration: 'MONGO' }
+myJobs = new JobCollection 'queue', { idGeneration: 'MONGO' }
 
 Router.configure
    layoutTemplate: 'master'
@@ -238,9 +238,7 @@ if Meteor.isClient
    Template.jobTable.helpers
       jobEntries: () ->
          # Reactively populate the table
-         cur = this.find({})
-         console.warn "job Entries #{cur.count()}", this
-         return cur
+         this.find({})
 
       numDepends: () ->
          this.depends?.length
@@ -376,13 +374,9 @@ if Meteor.isServer
          # This prevents a race condition on the client between Meteor.userId() and subscriptions to this publish
          # See: https://stackoverflow.com/questions/24445404/how-to-prevent-a-client-reactive-race-between-meteor-userid-and-a-subscription/24460877#24460877
          if this.userId is clientUserId
-            cursor = myJobs.find({ 'data.owner': this.userId })
-            console.warn "UserID matches #{cursor.count()}"
-            return cursor
+            return myJobs.find({ 'data.owner': this.userId })
          else
-            cursor = myJobs.find({ invalid: true })
-            console.warn "UserID doesn't match #{cursor.count()}"
-            return cursor
+            return []
 
       # Only publish files owned by this userId, and ignore temp file chunks used by resumable
       Meteor.publish 'allData', (clientUserId) ->
