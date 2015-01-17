@@ -17,41 +17,41 @@ myData = FileCollection('images', {
 
 myJobs = JobCollection 'queue', { idGeneration: 'MONGO' }
 
-# Router.configure () ->
-#    layoutTemplate: 'master'
+Router.configure
+   layoutTemplate: 'master'
 
-Router.map () ->
-   this.route 'home',
-      path: '/'
-      data:
-         nav: 'gallery'
-         content: myData
-      layoutTemplate: 'master'
-      yieldTemplates:
-         gallery:
-            to: 'content'
-         nav:
-            to: 'nav'
-   this.route 'files',
-      data:
-         nav: 'files'
-         content: myData
-      layoutTemplate: 'master'
-      yieldTemplates:
-         fileTable:
-            to: 'content'
-         nav:
-            to: 'nav'
-   this.route 'jobs',
-      data:
-         nav: 'jobs'
-         content: myJobs
-      layoutTemplate: 'master'
-      yieldTemplates:
-         jobTable:
-            to: 'content'
-         nav:
-            to: 'nav'
+Router.route '/', () ->
+   this.redirect '/gallery'
+
+Router.route '/gallery', () ->
+
+   this.render 'nav',
+      to: 'nav'
+      data: 'gallery'
+
+   this.render 'gallery', 
+      to: 'content'
+      data: myData
+
+Router.route '/files', () ->
+
+   this.render 'nav',
+      to: 'nav'
+      data: 'files'
+
+   this.render 'fileTable', 
+      to: 'content'
+      data: myData
+
+Router.route '/jobs', () ->
+
+   this.render 'nav',
+      to: 'nav'
+      data: 'jobs'
+
+   this.render 'jobTable', 
+      to: 'content'
+      data: myJobs
 
 ############################################################
 # Client-only code
@@ -239,7 +239,7 @@ if Meteor.isClient
       jobEntries: () ->
          # Reactively populate the table
          cur = this.find({})
-         console.warn "job Entries #{cur.count()}"
+         console.warn "job Entries #{cur.count()}", this
          return cur
 
       numDepends: () ->
@@ -380,8 +380,9 @@ if Meteor.isServer
             console.warn "UserID matches #{cursor.count()}"
             return cursor
          else
-            console.warn "UserID doesn't match"
-            return []
+            cursor = myJobs.find({ invalid: true })
+            console.warn "UserID doesn't match #{cursor.count()}"
+            return cursor
 
       # Only publish files owned by this userId, and ignore temp file chunks used by resumable
       Meteor.publish 'allData', (clientUserId) ->

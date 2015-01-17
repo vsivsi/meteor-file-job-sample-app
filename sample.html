@@ -10,13 +10,9 @@
 
 <template name="master">
   {{> top}}
-  {{#with nav}}
-    {{> yield region='nav'}}
-  {{/with}}
-  {{#with content}}
-    {{> yield region='content'}}
-  {{/with}}
-</template>
+  {{> yield "nav"}}
+  {{> yield "content"}}
+ </template>
 
 <template name="top">
   <div class="container panel">
@@ -34,9 +30,9 @@
 <template name="nav">
     <div class="container panel">
       <ul class="nav nav-pills">
-        <li class="{{active 'gallery'}}"><a href="{{pathFor 'home'}}">Gallery</a></li>
-        <li class="{{active 'files'}}"><a href="{{pathFor 'files'}}">Files</a></li>
-        <li class="{{active 'jobs'}}"><a href="{{pathFor 'jobs'}}">Jobs</a></li>
+        <li class="{{active 'gallery'}}"><a href="{{pathFor route='gallery'}}">Gallery</a></li>
+        <li class="{{active 'files'}}"><a href="{{pathFor route='files'}}">Files</a></li>
+        <li class="{{active 'jobs'}}"><a href="{{pathFor route='jobs'}}">Jobs</a></li>
       </ul>
     </div>
 </template>
