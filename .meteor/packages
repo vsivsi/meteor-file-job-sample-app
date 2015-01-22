@@ -5,7 +5,7 @@
 
 standard-app-packages
 coffeescript
-mizzao:bootstrap-3
+twbs:bootstrap
 accounts-ui
 accounts-password
 vsivsi:file-collection
