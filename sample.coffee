@@ -209,37 +209,45 @@ if Meteor.isClient
          console.log "Removing all files"
          this.find({ 'metadata.thumbOf': {$exists: false} }).forEach ((d) -> this.remove(d._id)), this
 
-   Template.jobTable.events
-      'click .cancel-job': (e, t) ->
-         console.log "Cancelling job: #{this._id}", t
-         job = t.data.makeJob this
-         job.cancel() if job
-      'click .remove-job': (e, t) ->
-         console.log "Removing job: #{this._id}"
-         job = t.data.makeJob this
-         job.remove() if job
-      'click .restart-job': (e, t) ->
-         console.log "Restarting job: #{this._id}"
-         job = t.data.makeJob this
-         job.restart() if job
-      'click .rerun-job': (e, t) ->
-         console.log "Rerunning job: #{this._id}"
-         job = t.data.makeJob this
-         job.rerun({ wait: 15000 }) if job
-      'click .pause-job': (e, t) ->
-         console.log "Pausing job: #{this._id}"
-         job = t.data.makeJob this
-         job.pause() if job
-      'click .resume-job': (e, t) ->
-         console.log "Resuming job: #{this._id}"
-         job = t.data.makeJob this
-         job.resume() if job
-
    Template.jobTable.helpers
       jobEntries: () ->
          # Reactively populate the table
          this.find({})
 
+   Template.jobEntry.rendered = () ->
+      t = this
+      this.autorun () ->
+         d = Template.currentData()
+         Tracker.afterFlush () ->
+            t.$("button[data-toggle=tooltip]").tooltip()
+
+   Template.jobEntry.events
+      'click .cancel-job': (e, t) ->
+         console.log "Cancelling job: #{this._id}", t
+         job = Template.parentData(1).makeJob this
+         job.cancel() if job
+      'click .remove-job': (e, t) ->
+         console.log "Removing job: #{this._id}"
+         job = Template.parentData(1).makeJob this
+         job.remove() if job
+      'click .restart-job': (e, t) ->
+         console.log "Restarting job: #{this._id}"
+         job = Template.parentData(1).makeJob this
+         job.restart() if job
+      'click .rerun-job': (e, t) ->
+         console.log "Rerunning job: #{this._id}"
+         job = Template.parentData(1).makeJob this
+         job.rerun({ wait: 15000 }) if job
+      'click .pause-job': (e, t) ->
+         console.log "Pausing job: #{this._id}"
+         job = Template.parentData(1).makeJob this
+         job.pause() if job
+      'click .resume-job': (e, t) ->
+         console.log "Resuming job: #{this._id}"
+         job = Template.parentData(1).makeJob this
+         job.resume() if job
+
+   Template.jobEntry.helpers
       numDepends: () ->
          this.depends?.length
 
@@ -288,6 +296,13 @@ if Meteor.isClient
             "text-success"
 
       running: () ->
+         if Template.instance().view.isRendered
+            # This code destroys Bootstrap tooltips on existing buttons that may be
+            # about to disappear. This is done here because by the time the template
+            # autorun function runs, the button may already be out of the DOM, but
+            # a "ghost" tooltip for that button can remain visible. 
+            Template.instance().$("button[data-toggle=tooltip]").tooltip('destroy')
+
          this.status is 'running'
 
       cancellable: (parent) ->
@@ -303,7 +318,6 @@ if Meteor.isClient
          this.status is 'completed'
 
       pausable: (parent) ->
-         console.log "In pausable...", Template.parentData(1)
          this.status in Template.parentData(1).jobStatusPausable
 
       resumable: () ->
