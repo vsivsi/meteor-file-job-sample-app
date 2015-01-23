@@ -291,20 +291,20 @@ if Meteor.isClient
          this.status is 'running'
 
       cancellable: (parent) ->
-         this.status in UI._parentData(1).jobStatusCancellable
+         this.status in Template.parentData(1).jobStatusCancellable
 
       removable: (parent) ->
-         this.status in UI._parentData(1).jobStatusRemovable
+         this.status in Template.parentData(1).jobStatusRemovable
 
       restartable: (parent) ->
-         this.status in UI._parentData(1).jobStatusRestartable
+         this.status in Template.parentData(1).jobStatusRestartable
 
       rerunable: () ->
          this.status is 'completed'
 
       pausable: (parent) ->
-         console.log "In pausable...", UI._parentData(1)
-         this.status in UI._parentData(1).jobStatusPausable
+         console.log "In pausable...", Template.parentData(1)
+         this.status in Template.parentData(1).jobStatusPausable
 
       resumable: () ->
          this.status is 'paused'
