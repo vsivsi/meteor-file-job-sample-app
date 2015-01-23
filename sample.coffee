@@ -215,11 +215,7 @@ if Meteor.isClient
          this.find({})
 
    Template.jobEntry.rendered = () ->
-      t = this
-      this.autorun () ->
-         d = Template.currentData()
-         Tracker.afterFlush () ->
-            t.$("button[data-toggle=tooltip]").tooltip()
+      this.$('.button-column').tooltip({selector: 'button[data-toggle=tooltip]'})
 
    Template.jobEntry.events
       'click .cancel-job': (e, t) ->
