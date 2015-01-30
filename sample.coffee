@@ -15,7 +15,17 @@ myData = new FileCollection('images', {
    ]}
 )
 
-myJobs = new JobCollection 'queue', { idGeneration: 'MONGO' }
+myJobs = new JobCollection 'queue',
+   idGeneration: 'MONGO' 
+   transform: (d) ->
+      console.log "Transforming...", d
+      try
+         res = myJobs.makeJob d
+         console.warn "makeJob succeeded in transform"
+      catch e
+         console.warn "makeJob failed in transform"
+         res = d
+      return res
 
 Router.configure
    layoutTemplate: 'master'
@@ -220,27 +230,27 @@ if Meteor.isClient
    Template.jobEntry.events
       'click .cancel-job': (e, t) ->
          console.log "Cancelling job: #{this._id}", t
-         job = Template.parentData(1).makeJob this
+         job = this
          job.cancel() if job
       'click .remove-job': (e, t) ->
          console.log "Removing job: #{this._id}"
-         job = Template.parentData(1).makeJob this
+         job = this
          job.remove() if job
       'click .restart-job': (e, t) ->
          console.log "Restarting job: #{this._id}"
-         job = Template.parentData(1).makeJob this
+         job = this
          job.restart() if job
       'click .rerun-job': (e, t) ->
          console.log "Rerunning job: #{this._id}"
-         job = Template.parentData(1).makeJob this
+         job = this
          job.rerun({ wait: 15000 }) if job
       'click .pause-job': (e, t) ->
          console.log "Pausing job: #{this._id}"
-         job = Template.parentData(1).makeJob this
+         job = this
          job.pause() if job
       'click .resume-job': (e, t) ->
          console.log "Resuming job: #{this._id}"
-         job = Template.parentData(1).makeJob this
+         job = this
          job.resume() if job
 
    Template.jobEntry.helpers
@@ -254,6 +264,7 @@ if Meteor.isClient
          this._id.valueOf()
 
       statusBG: () ->
+         console.log "In status!", this, this.status
          {
             waiting: 'primary'
             ready: 'info'
@@ -473,7 +484,7 @@ if Meteor.isServer
          if file.metadata?._Job
             if job = myJobs.findOne({_id: file.metadata._Job, status: { $in: myJobs.jobStatusCancellable }},{ fields: { log: 0 }})
                console.log "Cancelling the job for the removed file!", job._id
-               myJobs.makeJob(job).cancel (err, res) ->
+               job.cancel (err, res) ->
                   console.warn "Job cancelled!", job._id
                   myData.remove
                      _id: job.data.outputFileId
