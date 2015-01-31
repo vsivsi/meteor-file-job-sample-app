@@ -20,10 +20,10 @@ myJobs = new JobCollection 'queue',
    transform: (d) ->
       console.log "Transforming...", d
       try
-         res = myJobs.makeJob d
-         console.warn "makeJob succeeded in transform"
+         res = myJobs.createJob d
+         console.warn "succeeded in transform"
       catch e
-         console.warn "makeJob failed in transform"
+         console.warn "failed in transform"
          res = d
       return res
 
