@@ -16,7 +16,7 @@ myData = new FileCollection('images', {
 )
 
 myJobs = new JobCollection 'queue',
-   idGeneration: 'MONGO' 
+   idGeneration: 'MONGO'
    transform: (d) ->
       console.log "Transforming...", d
       try
@@ -39,7 +39,7 @@ Router.route '/gallery', () ->
       to: 'nav'
       data: 'gallery'
 
-   this.render 'gallery', 
+   this.render 'gallery',
       to: 'content'
       data: myData
 
@@ -49,7 +49,7 @@ Router.route '/files', () ->
       to: 'nav'
       data: 'files'
 
-   this.render 'fileTable', 
+   this.render 'fileTable',
       to: 'content'
       data: myData
 
@@ -59,7 +59,7 @@ Router.route '/jobs', () ->
       to: 'nav'
       data: 'jobs'
 
-   this.render 'jobTable', 
+   this.render 'jobTable',
       to: 'content'
       data: myJobs
 
@@ -307,7 +307,7 @@ if Meteor.isClient
             # This code destroys Bootstrap tooltips on existing buttons that may be
             # about to disappear. This is done here because by the time the template
             # autorun function runs, the button may already be out of the DOM, but
-            # a "ghost" tooltip for that button can remain visible. 
+            # a "ghost" tooltip for that button can remain visible.
             Template.instance().$("button[data-toggle=tooltip]").tooltip('destroy')
 
          this.status is 'running'
