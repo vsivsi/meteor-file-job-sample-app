@@ -230,27 +230,27 @@ if Meteor.isClient
    Template.jobEntry.events
       'click .cancel-job': (e, t) ->
          console.log "Cancelling job: #{this._id}", t
-         job = this
+         job = Template.currentData()
          job.cancel() if job
       'click .remove-job': (e, t) ->
          console.log "Removing job: #{this._id}"
-         job = this
+         job = Template.currentData()
          job.remove() if job
       'click .restart-job': (e, t) ->
          console.log "Restarting job: #{this._id}"
-         job = this
+         job = Template.currentData()
          job.restart() if job
       'click .rerun-job': (e, t) ->
          console.log "Rerunning job: #{this._id}"
-         job = this
+         job = Template.currentData()
          job.rerun({ wait: 15000 }) if job
       'click .pause-job': (e, t) ->
          console.log "Pausing job: #{this._id}"
-         job = this
+         job = Template.currentData()
          job.pause() if job
       'click .resume-job': (e, t) ->
          console.log "Resuming job: #{this._id}"
-         job = this
+         job = Template.currentData()
          job.resume() if job
 
    Template.jobEntry.helpers
@@ -264,7 +264,6 @@ if Meteor.isClient
          this._id.valueOf()
 
       statusBG: () ->
-         console.log "In status!", this, this.status
          {
             waiting: 'primary'
             ready: 'info'
@@ -312,20 +311,20 @@ if Meteor.isClient
 
          this.status is 'running'
 
-      cancellable: (parent) ->
-         this.status in Template.parentData(1).jobStatusCancellable
+      cancellable: () ->
+         this.status in Template.parentData(2).jobStatusCancellable
 
-      removable: (parent) ->
-         this.status in Template.parentData(1).jobStatusRemovable
+      removable: () ->
+         this.status in Template.parentData(2).jobStatusRemovable
 
-      restartable: (parent) ->
-         this.status in Template.parentData(1).jobStatusRestartable
+      restartable: () ->
+         this.status in Template.parentData(2).jobStatusRestartable
 
       rerunable: () ->
          this.status is 'completed'
 
-      pausable: (parent) ->
-         this.status in Template.parentData(1).jobStatusPausable
+      pausable: () ->
+         this.status in Template.parentData(2).jobStatusPausable
 
       resumable: () ->
          this.status is 'paused'
