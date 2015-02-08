@@ -557,5 +557,9 @@ if Meteor.isServer
                   cb()
                )
 
-      workers = myJobs.processJobs 'makeThumb', { concurrency: 2, prefetch: 2, pollInterval: 2500 }, worker
-
+      workers = myJobs.processJobs 'makeThumb', { concurrency: 2, prefetch: 2, pollInterval: 1000000000 }, worker
+      myJobs.find({ type: 'makeThumb', status: 'ready' })
+             .observe
+               added: (doc) ->
+                  console.log "Added:", doc
+                  workers.trigger()
