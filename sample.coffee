@@ -183,7 +183,7 @@ if Meteor.isClient
          # Management of thumbnails happens on the server!
          if this.metadata.thumbOf?
             t.data.remove this.metadata.thumbOf
-         else   
+         else
             t.data.remove this._id
 
    Template.gallery.helpers
@@ -213,7 +213,6 @@ if Meteor.isClient
 
    Template.fileControls.events
       'click .remove-files': (e, t) ->
-         console.log "Removing all files"
          this.find({ 'metadata.thumbOf': {$exists: false} }).forEach ((d) -> this.remove(d._id)), this
 
    Template.jobTable.helpers
@@ -385,7 +384,7 @@ if Meteor.isServer
 
    Meteor.startup () ->
 
-      myJobs.startJobs()
+      myJobs.startJobServer()
 
       Meteor.publish 'allJobs', (clientUserId) ->
          # This prevents a race condition on the client between Meteor.userId() and subscriptions to this publish
@@ -458,7 +457,6 @@ if Meteor.isServer
                filename: "tn_#{file.filename}.png"
                contentType: 'image/png'
                metadata: file.metadata
-            console.warn "Thumbnail inserted"
             job = myJobs.createJob('makeThumb',
                owner: file.metadata._auth.owner
                inputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/#{file._id}")
@@ -466,7 +464,6 @@ if Meteor.isServer
                inputFileId: file._id
                outputFileId: outputFileId
             )
-            console.warn "Job created"
             if jobId = job.delay(5000).retry({ wait: 20000, retries: 5 }).save()
                myData.update({ _id: file._id }, { $set: { 'metadata._Job': jobId }})
                myData.update({ _id: outputFileId }, { $set: { 'metadata._Job': jobId, 'metadata.thumbOf': file._id }})
@@ -479,11 +476,8 @@ if Meteor.isServer
             if job = myJobs.findOne({_id: file.metadata._Job, status: { $in: myJobs.jobStatusCancellable }},{ fields: { log: 0 }})
                console.log "Cancelling the job for the removed file!", job._id
                job.cancel (err, res) ->
-                  console.warn "Job cancelled!", job._id
                   myData.remove
                      _id: job.data.outputFileId
-            else
-               console.log "No cancellable job found!", file._id
          thumb = myData.remove { _id: file.metadata.thumb }
 
       # When a file's data changes, call the appropriate functions
@@ -492,7 +486,6 @@ if Meteor.isServer
          if oldFile.md5 isnt newFile.md5
             if oldFile.metadata._Job?
                # Only call if this file has a job outstanding
-               console.warn 'Outstanding job!'
                removedFileJob oldFile
             addedFileJob newFile
 
@@ -518,7 +511,6 @@ if Meteor.isServer
                return cb()
 
             outStream = myData.upsertStream { _id: job.data.outputFileId }, {}, (err, file) ->
-               console.warn "Outfile closed"
                if err
                   job.fail "#{err}"
                else
@@ -553,5 +545,4 @@ if Meteor.isServer
       myJobs.find({ type: 'makeThumb', status: 'ready' })
              .observe
                added: (doc) ->
-                  console.log "Added:", doc
                   workers.trigger()
