@@ -18,12 +18,9 @@ myData = new FileCollection('images', {
 myJobs = new JobCollection 'queue',
    idGeneration: 'MONGO'
    transform: (d) ->
-      console.log "Transforming...", d
       try
          res = myJobs.createJob d
-         console.warn "succeeded in transform"
       catch e
-         console.warn "failed in transform"
          res = d
       return res
 
@@ -455,7 +452,6 @@ if Meteor.isServer
 
       # Create a job to make a thumbnail for each newly uploaded image
       addedFileJob = (file) ->
-         console.warn "Added file!", file
          # Don't make new jobs for files tha already have them
          unless file?.metadata?._Job?
             outputFileId = myData.insert
@@ -479,7 +475,6 @@ if Meteor.isServer
 
       # If a removed file has an associated cancellable job, cancel it.
       removedFileJob = (file) ->
-         console.warn "Removed a file!", file._id
          if file.metadata?._Job
             if job = myJobs.findOne({_id: file.metadata._Job, status: { $in: myJobs.jobStatusCancellable }},{ fields: { log: 0 }})
                console.log "Cancelling the job for the removed file!", job._id
@@ -494,15 +489,12 @@ if Meteor.isServer
       # When a file's data changes, call the appropriate functions
       # for the removal of the old file and addition of the new.
       changedFileJob = (oldFile, newFile) ->
-         console.warn "Changed file!", oldFile._id
          if oldFile.md5 isnt newFile.md5
             if oldFile.metadata._Job?
                # Only call if this file has a job outstanding
                console.warn 'Outstanding job!'
                removedFileJob oldFile
             addedFileJob newFile
-         else
-            console.warn "File data didn't change"
 
       # Watch for changes to uploaded image files
       fileObserve = myData.find(
