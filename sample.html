@@ -209,44 +209,44 @@
           <span class="label label-{{statusBG}}">{{status}}</span>
         {{/if}}
       </td>
-      <td><p class="button-column">
+      <td>
         {{#if pausable}}
-          <button type="button" class="btn pause-job btn-default btn-sm" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Pause Job">
+          <button type="button" class="btn pause-job btn-default btn-xs" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Pause Job">
             <span class="glyphicon glyphicon-pause"></span>
           </button>
         {{/if}}
         {{#if resumable}}
-          <button type="button" class="btn resume-job btn-default btn-sm" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Resume Job">
+          <button type="button" class="btn resume-job btn-default btn-xs" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Resume Job">
             <span class="glyphicon glyphicon-play"></span>
           </button>
         {{/if}}
         {{#if restartable}}
-          <button type="button" class="btn restart-job btn-info btn-sm" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Restart Job">
+          <button type="button" class="btn restart-job btn-info btn-xs" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Restart Job">
             <span class="glyphicon glyphicon-repeat"></span>
           </button>
         {{/if}}
         {{#if rerunable}}
-          <button type="button" class="btn rerun-job btn-info btn-sm" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Rerun Job">
+          <button type="button" class="btn rerun-job btn-info btn-xs" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Rerun Job">
             <span class="glyphicon glyphicon-refresh"></span>
           </button>
         {{/if}}
         {{#if cancellable}}
-          <button type="button " class="btn cancel-job btn-warning btn-sm" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Cancel Job">
+          <button type="button " class="btn cancel-job btn-warning btn-xs" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Cancel Job">
             <span class="glyphicon glyphicon-ban-circle"></span>
           </button>
         {{/if}}
         {{#if removable}}
           {{#if rerunable}}
-            <button type="button" class="btn remove-job btn-success btn-sm" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Remove Job">
+            <button type="button" class="btn remove-job btn-success btn-xs" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Remove Job">
               <span class="glyphicon glyphicon-ok"></span>
             </button>
           {{else}}
-            <button type="button" class="btn remove-job btn-danger btn-sm" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Remove Job">
+            <button type="button" class="btn remove-job btn-danger btn-xs" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Remove Job">
               <span class="glyphicon glyphicon-remove"></span>
             </button>
           {{/if}}
         {{/if}}
-      </p></td>
+      </td>
     {{/with}}
   </tr>
 </template>
