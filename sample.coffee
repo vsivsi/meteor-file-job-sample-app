@@ -221,11 +221,15 @@ if Meteor.isClient
          this.find({})
 
    Template.jobEntry.rendered = () ->
-      this.$('.button-column').tooltip({selector: 'button[data-toggle=tooltip]'})
+      this.$('.button-column').tooltip
+         selector: 'button[data-toggle=tooltip]'
+         delay:
+            show: 500
+            hide: 100
 
    Template.jobEntry.events
       'click .cancel-job': (e, t) ->
-         console.log "Cancelling job: #{this._id}", t
+         console.log "Cancelling job: #{this._id}"
          job = Template.currentData()
          job.cancel() if job
       'click .remove-job': (e, t) ->
@@ -249,6 +253,12 @@ if Meteor.isClient
          job = Template.currentData()
          job.resume() if job
 
+   isInfinity = (val) ->
+      if val > Job.forever - 7199254740935
+         "∞"
+      else
+         val
+
    Template.jobEntry.helpers
       numDepends: () ->
          this.depends?.length
@@ -270,17 +280,9 @@ if Meteor.isClient
             completed: 'success'
          }[this.status]
 
-      numRepeats: () ->
-         if this.repeats is parent.Forever
-            "∞"
-         else
-            this.repeats
+      numRepeats: () -> isInfinity this.repeats
 
-      numRetries: () ->
-         if this.retries is parent.Forever
-            "∞"
-         else
-            this.retries
+      numRetries: () -> isInfinity this.retries
 
       runAt: () ->
          Session.get 'date'
@@ -308,19 +310,19 @@ if Meteor.isClient
          this.status is 'running'
 
       cancellable: () ->
-         this.status in Template.parentData(2).jobStatusCancellable
+         this.status in Job.jobStatusCancellable
 
       removable: () ->
-         this.status in Template.parentData(2).jobStatusRemovable
+         this.status in Job.jobStatusRemovable
 
       restartable: () ->
-         this.status in Template.parentData(2).jobStatusRestartable
+         this.status in Job.jobStatusRestartable
 
       rerunable: () ->
          this.status is 'completed'
 
       pausable: () ->
-         this.status in Template.parentData(2).jobStatusPausable
+         this.status in Job.jobStatusPausable
 
       resumable: () ->
          this.status is 'paused'
@@ -340,8 +342,7 @@ if Meteor.isClient
             t.data.resumeJobs(ids) if ids.length > 0
          else
             console.log "pause queue"
-            ids = t.data.find({ status: { $in: t.data.jobStatusPausable }}, { fields: { _id: 1 }}).map (d) -> d._id
-            console.log "pausing: #{ids.length} jobs"
+            ids = t.data.find({ status: { $in: Job.jobStatusPausable }}, { fields: { _id: 1 }}).map (d) -> d._id console.log "pausing: #{ids.length} jobs"
             t.data.pauseJobs(ids) if ids.length > 0
 
       'click .stop-queue': (e, t) ->
@@ -354,19 +355,19 @@ if Meteor.isClient
 
       'click .cancel-queue': (e, t) ->
          console.log "cancel all"
-         ids = t.data.find({ status: { $in: t.data.jobStatusCancellable } }).map (d) -> d._id
+         ids = t.data.find({ status: { $in: Job.jobStatusCancellable } }).map (d) -> d._id
          console.log "cancelling: #{ids.length} jobs"
          t.data.cancelJobs(ids) if ids.length > 0
 
       'click .restart-queue': (e, t) ->
          console.log "restart all"
-         ids = t.data.find({ status: { $in: t.data.jobStatusRestartable } }).map (d) -> d._id
+         ids = t.data.find({ status: { $in: Job.jobStatusRestartable } }).map (d) -> d._id
          console.log "restarting: #{ids.length} jobs"
          t.data.restartJobs(ids, (e, r) -> console.log("Restart returned", r)) if ids.length > 0
 
       'click .remove-queue': (e, t) ->
          console.log "remove all"
-         ids = t.data.find({ status: { $in: t.data.jobStatusRemovable } }).map (d) -> d._id
+         ids = t.data.find({ status: { $in: Job.jobStatusRemovable } }).map (d) -> d._id
          console.log "removing: #{ids.length} jobs"
          t.data.removeJobs(ids) if ids.length > 0
 
