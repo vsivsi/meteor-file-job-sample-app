@@ -71,7 +71,7 @@ twbs:bootstrap@3.3.4
 ui@1.0.6
 underscore@1.0.3
 url@1.0.4
-vsivsi:file-collection@1.0.5
+vsivsi:file-collection@1.0.6
 vsivsi:job-collection@1.1.1
 webapp@1.2.0
 webapp-hashing@1.0.3
