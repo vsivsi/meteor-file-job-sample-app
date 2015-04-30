@@ -127,8 +127,7 @@ if Meteor.isClient
    shorten = (name, w = 16) ->
       w += w % 4
       w = (w-4)/2
-      if name.length > w
-         w = w/2
+      if name.length > 2*w
          name[0..w] + '…' + name[-w-1..-1]
       else
          name
