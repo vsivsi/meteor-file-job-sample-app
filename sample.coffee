@@ -458,13 +458,12 @@ if Meteor.isServer
                filename: "tn_#{file.filename}.png"
                contentType: 'image/png'
                metadata: file.metadata
-            job = myJobs.createJob('makeThumb',
+            job = new Job myJobs, 'makeThumb',
                owner: file.metadata._auth.owner
                inputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/#{file._id}")
                outputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/put/#{outputFileId}")
                inputFileId: file._id
                outputFileId: outputFileId
-            )
             if jobId = job.delay(5000).retry({ wait: 20000, retries: 5 }).save()
                myData.update({ _id: file._id }, { $set: { 'metadata._Job': jobId }})
                myData.update({ _id: outputFileId }, { $set: { 'metadata._Job': jobId, 'metadata.thumbOf': file._id }})
