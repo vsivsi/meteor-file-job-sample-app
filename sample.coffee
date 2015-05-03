@@ -10,7 +10,7 @@
 myData = new FileCollection('images', {
    resumable: true,     # Enable the resumable.js compatible chunked file upload interface
    http: [
-      { method: 'get', path: '/:_id', lookup: (params, query) -> return { _id: params._id }},
+      { method: 'get', path: '/id/:_id', lookup: (params, query) -> return { _id: params._id }},
       { method: 'put', path: '/put/:_id', lookup: (params, query) -> return { _id: params._id }}
    ]}
 )
@@ -19,7 +19,7 @@ myJobs = new JobCollection 'queue',
    idGeneration: 'MONGO'
    transform: (d) ->
       try
-         res = myJobs.createJob d
+         res = new Job myJobs, d
       catch e
          res = d
       return res
@@ -136,7 +136,7 @@ if Meteor.isClient
       shorten this.filename, w
 
    isImage = () ->
-      imageTypes[this.contentType]?
+      imageTypes[this.contentType]? and (this.length isnt 0)
 
    Template.top.helpers
       loginToken: () ->

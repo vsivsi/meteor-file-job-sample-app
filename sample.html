@@ -46,7 +46,7 @@
           <div class="col-sm-6 col-lg-2">
             <div class="thumbnail">
               {{#if isImage}}
-                <a href="{{../baseURL}}/{{id}}"><img class="img-thumbnail" alt="{{altMessage}}" src="{{../baseURL}}/{{thumb}}"></a>
+                <a href="{{../baseURL}}/id/{{id}}"><img class="img-thumbnail" alt="{{altMessage}}" src="{{../baseURL}}/id/{{thumb}}"></a>
               {{else}}
                 <span class="text-muted text-center">No preview</span>
               {{/if}}
@@ -93,7 +93,7 @@
         {{#each dataEntries}}
           <tr>
             <td>
-              <a href="{{../baseURL}}/{{id}}?download=true">{{shortFilename 32}}</a>
+              <a href="{{../baseURL}}/id/{{id}}?download=true">{{shortFilename 32}}</a>
               <button type="button" class="close del-file" aria-hidden="true">&times;</button>
             </td>
             <td>{{id}}</td>
