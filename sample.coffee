@@ -195,7 +195,10 @@ if Meteor.isClient
          "#{this._id}"
 
       thumb: () ->
-         "#{this.metadata.thumb}"
+         unless this?.metadata?.thumb
+            null
+         else
+            "#{this.metadata.thumb}"
 
       isImage: isImage
 

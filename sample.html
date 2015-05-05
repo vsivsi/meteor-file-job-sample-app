@@ -46,7 +46,11 @@
           <div class="col-sm-6 col-lg-2">
             <div class="thumbnail">
               {{#if isImage}}
-                <a href="{{../baseURL}}/id/{{id}}"><img class="img-thumbnail" alt="{{altMessage}}" src="{{../baseURL}}/id/{{thumb}}"></a>
+                {{#if thumb}}
+                  <a href="{{../baseURL}}/id/{{id}}"><img class="img-thumbnail" alt="{{altMessage}}" src="{{../baseURL}}/id/{{thumb}}"></a>
+                {{else}}
+                  <a href="{{../baseURL}}/id/{{id}}"><img class="img-thumbnail" alt="{{altMessage}}" src=""></a>
+                {{/if}}
               {{else}}
                 <span class="text-muted text-center">No preview</span>
               {{/if}}
