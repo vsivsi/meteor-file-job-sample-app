@@ -135,9 +135,6 @@ if Meteor.isClient
    shortFilename = (w = 16) ->
       shorten this.filename, w
 
-   isImage = () ->
-      imageTypes[this.contentType]? and (this.length isnt 0)
-
    Template.top.helpers
       loginToken: () ->
          Meteor.userId()
@@ -175,8 +172,6 @@ if Meteor.isClient
       uploadProgress: () ->
          percent = Session.get "#{this._id}"
 
-      isImage: isImage
-
    Template.fileTable.events
       # Wire up the event to remove a file by clicking the `X`
       'click .del-file': (e, t) ->
@@ -195,20 +190,21 @@ if Meteor.isClient
          "#{this._id}"
 
       thumb: () ->
-         unless this?.metadata?.thumb
+         unless this.metadata?.thumbComplete
             null
          else
             "#{this.metadata.thumb}"
 
-      isImage: isImage
+      isImage: () ->
+         imageTypes[this.contentType]?
 
       shortFilename: shortFilename
 
       altMessage: () ->
-         if this.length isnt 0
-            "Processing thumbnail..."
-         else
+         if this.length is 0
             "Uploading..."
+         else
+            "Processing thumbnail..."
 
    Template.gallery.rendered = () ->
       # This assigns a file drop zone to the "file table"
@@ -468,7 +464,7 @@ if Meteor.isServer
                inputFileId: file._id
                outputFileId: outputFileId
             if jobId = job.delay(5000).retry({ wait: 20000, retries: 5 }).save()
-               myData.update({ _id: file._id }, { $set: { 'metadata._Job': jobId }})
+               myData.update({ _id: file._id }, { $set: { 'metadata._Job': jobId, 'metadata.thumb': outputFileId }})
                myData.update({ _id: outputFileId }, { $set: { 'metadata._Job': jobId, 'metadata.thumbOf': file._id }})
             else
                console.error "Error saving new job for file #{file._id}"
@@ -481,7 +477,8 @@ if Meteor.isServer
                job.cancel (err, res) ->
                   myData.remove
                      _id: job.data.outputFileId
-         thumb = myData.remove { _id: file.metadata.thumb }
+         if file.metadata?.thumb?
+            thumb = myData.remove { _id: file.metadata.thumb }
 
       # When a file's data changes, call the appropriate functions
       # for the removal of the old file and addition of the new.
@@ -513,36 +510,40 @@ if Meteor.isServer
                job.fail "Error running graphicsmagick: #{err}", { fatal: true }
                return cb()
 
-            outStream = myData.upsertStream { _id: job.data.outputFileId }, {}, (err, file) ->
-               if err
-                  job.fail "#{err}"
-               else
-                  job.progress 80, 100
-                  myData.update { _id: job.data.inputFileId }, { $set: { 'metadata.thumb': job.data.outputFileId } }
-                  job.done()
-               cb()
-            unless outStream
-               job.fail 'Output file not found'
-               cb null
+            inFile = myData.findOne { _id: job.data.inputFileId }
 
             inStream = myData.findOneStream { _id: job.data.inputFileId }
             unless inStream
                outStream.releaseLock()
                job.fail 'Input file not found'
-               cb null
+               return cb()
 
             job.progress 20, 100
 
-            gm(inStream)
+            gm(inStream, inFile.filename or '')
                .resize(150,150)
-               .stream('png')
-               .pipe(outStream, (err) ->
-                  console.warn 'Error running graphicsmagick:', err
-                  outStream.releaseLock()
-                  inStream.releaseLock()
-                  job.fail "Error running graphicsmagick: #{err}"
-                  cb()
-               )
+               .stream 'png', Meteor.bindEnvironment (err, stdout, stderr) ->
+                  stderr.pipe process.stderr
+                  if err
+                     job.fail "Error running graphicsmagick: #{err}"
+                     return cb()
+                  else
+                     outStream = myData.upsertStream { _id: job.data.outputFileId }, {}, (err, file) ->
+                        if err
+                           job.fail "#{err}"
+                        else if file.length is 0
+                           job.fail 'Empty output from graphicsmagick!'
+                        else
+                           job.progress 80, 100
+                           myData.update { _id: job.data.inputFileId }, { $set: 'metadata.thumbComplete': true }
+                           job.done()
+                        return cb()
+
+                     unless outStream
+                        job.fail 'Output file not found'
+                        return cb()
+
+                     stdout.pipe(outStream)
 
       workers = myJobs.processJobs 'makeThumb', { concurrency: 2, prefetch: 2, pollInterval: 1000000000 }, worker
       myJobs.find({ type: 'makeThumb', status: 'ready' })
