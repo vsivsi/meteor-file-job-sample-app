@@ -452,23 +452,35 @@ if Meteor.isServer
       # Create a job to make a thumbnail for each newly uploaded image
       addedFileJob = (file) ->
          # Don't make new jobs for files tha already have them in process...
-         # This update should be atomic, so only one server will succeed and create a job
-         if myData.update({ _id: file._id, 'metadata._Job': {$exists: false}}, { $set: { 'metadata._Job': null }})
-            outputFileId = myData.insert
-               filename: "tn_#{file.filename}.png"
-               contentType: 'image/png'
-               metadata: file.metadata
-            job = new Job myJobs, 'makeThumb',
-               owner: file.metadata._auth.owner
-               inputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/#{file._id}")
-               outputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/put/#{outputFileId}")
-               inputFileId: file._id
-               outputFileId: outputFileId
-            if jobId = job.delay(5000).retry({ wait: 20000, retries: 5 }).save()
-               myData.update({ _id: file._id }, { $set: { 'metadata._Job': jobId, 'metadata.thumb': outputFileId }})
-               myData.update({ _id: outputFileId }, { $set: { 'metadata._Job': jobId, 'metadata.thumbOf': file._id }})
-            else
-               console.error "Error saving new job for file #{file._id}"
+         # findAndModify is atomic, so only one server will succeed and go on to create a job
+         myData.rawCollection().findAndModify(
+            { _id: new MongoInternals.NpmModule.ObjectID(file._id.toHexString()), 'metadata._Job': {$exists: false}},
+            [],
+            { $set: { 'metadata._Job': null }},
+            { w: 1 },
+            Meteor.bindEnvironment (err, doc) ->
+               if err
+                  return console.error "Error locking file document in job creation: ", err
+               if doc  # This is null if update above didn't succeed
+                  console.log "Successfully modified raw collection"
+                  outputFileId = myData.insert
+                     filename: "tn_#{file.filename}.png"
+                     contentType: 'image/png'
+                     metadata: file.metadata
+                  job = new Job myJobs, 'makeThumb',
+                     owner: file.metadata._auth.owner
+                     inputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/#{file._id}")
+                     outputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/put/#{outputFileId}")
+                     inputFileId: file._id
+                     outputFileId: outputFileId
+                  if jobId = job.delay(5000).retry({ wait: 20000, retries: 5 }).save()
+                     myData.update({ _id: file._id }, { $set: { 'metadata._Job': jobId, 'metadata.thumb': outputFileId }})
+                     myData.update({ _id: outputFileId }, { $set: { 'metadata._Job': jobId, 'metadata.thumbOf': file._id }})
+                  else
+                     console.error "Error saving new job for file #{file._id}"
+               else
+                  console.log "Failed to modify raw collection"
+         )
 
       # If a removed file has an associated cancellable job, cancel it.
       removedFileJob = (file) ->
