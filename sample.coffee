@@ -452,7 +452,8 @@ if Meteor.isServer
       # Create a job to make a thumbnail for each newly uploaded image
       addedFileJob = (file) ->
          # Don't make new jobs for files tha already have them in process...
-         # findAndModify is atomic, so only one server will succeed and go on to create a job
+         # findAndModify is atomic, so in a multi-server environment,
+         # only one server can succeed and go on to create a job
          myData.rawCollection().findAndModify(
             { _id: new MongoInternals.NpmModule.ObjectID(file._id.toHexString()), 'metadata._Job': {$exists: false}},
             [],
@@ -462,7 +463,6 @@ if Meteor.isServer
                if err
                   return console.error "Error locking file document in job creation: ", err
                if doc  # This is null if update above didn't succeed
-                  console.log "Successfully modified raw collection"
                   outputFileId = myData.insert
                      filename: "tn_#{file.filename}.png"
                      contentType: 'image/png'
@@ -478,8 +478,6 @@ if Meteor.isServer
                      myData.update({ _id: outputFileId }, { $set: { 'metadata._Job': jobId, 'metadata.thumbOf': file._id }})
                   else
                      console.error "Error saving new job for file #{file._id}"
-               else
-                  console.log "Failed to modify raw collection"
          )
 
       # If a removed file has an associated cancellable job, cancel it.
