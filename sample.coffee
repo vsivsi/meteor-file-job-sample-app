@@ -451,8 +451,9 @@ if Meteor.isServer
 
       # Create a job to make a thumbnail for each newly uploaded image
       addedFileJob = (file) ->
-         # Don't make new jobs for files tha already have them
-         unless file?.metadata?._Job?
+         # Don't make new jobs for files tha already have them in process...
+         # This update should be atomic, so only one server will succeed and create a job
+         if myData.update({ _id: file._id, 'metadata._Job': {$exists: false}}, { $set: { 'metadata._Job': null }})
             outputFileId = myData.insert
                filename: "tn_#{file.filename}.png"
                contentType: 'image/png'
