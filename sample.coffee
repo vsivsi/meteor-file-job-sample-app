@@ -10,8 +10,7 @@
 myData = new FileCollection('images', {
    resumable: true,     # Enable the resumable.js compatible chunked file upload interface
    http: [
-      { method: 'get', path: '/id/:_id', lookup: (params, query) -> return { _id: params._id }},
-      { method: 'put', path: '/put/:_id', lookup: (params, query) -> return { _id: params._id }}
+      { method: 'get', path: '/id/:_id', lookup: (params, query) -> return { _id: params._id }}
    ]}
 )
 
@@ -451,9 +450,10 @@ if Meteor.isServer
 
       # Create a job to make a thumbnail for each newly uploaded image
       addedFileJob = (file) ->
-         # Don't make new jobs for files tha already have them in process...
+         # Don't make new jobs for files which already have them in process...
          # findAndModify is atomic, so in a multi-server environment,
-         # only one server can succeed and go on to create a job
+         # only one server can succeed and go on to create a job.
+         # Too bad Meteor has no built-in atomic DB update...
          myData.rawCollection().findAndModify(
             { _id: new MongoInternals.NpmModule.ObjectID(file._id.toHexString()), 'metadata._Job': {$exists: false}},
             [],
@@ -555,7 +555,8 @@ if Meteor.isServer
                      stdout.pipe(outStream)
 
       workers = myJobs.processJobs 'makeThumb', { concurrency: 2, prefetch: 2, pollInterval: 1000000000 }, worker
+
       myJobs.find({ type: 'makeThumb', status: 'ready' })
-             .observe
-               added: (doc) ->
-                  workers.trigger()
+         .observe
+            added: (doc) ->
+               workers.trigger()
