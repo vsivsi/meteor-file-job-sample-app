@@ -469,8 +469,7 @@ if Meteor.isServer
                      metadata: file.metadata
                   job = new Job myJobs, 'makeThumb',
                      owner: file.metadata._auth.owner
-                     inputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/#{file._id}")
-                     outputFileURL: Meteor.absoluteUrl("#{myData.baseURL[1..]}/put/#{outputFileId}")
+                     # These Id values are used by the worker to read and write the correct files for this job.
                      inputFileId: file._id
                      outputFileId: outputFileId
                   if jobId = job.delay(5000).retry({ wait: 20000, retries: 5 }).save()
@@ -525,7 +524,6 @@ if Meteor.isServer
 
             inStream = myData.findOneStream { _id: job.data.inputFileId }
             unless inStream
-               outStream.releaseLock()
                job.fail 'Input file not found'
                return cb()
 
