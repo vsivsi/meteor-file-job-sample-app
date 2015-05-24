@@ -1,19 +1,21 @@
 {
   "dependencies": {
     "gm": {
-      "version": "1.17.0",
+      "version": "1.18.1",
       "dependencies": {
         "debug": {
-          "version": "0.7.0"
+          "version": "2.2.0",
+          "dependencies": {
+            "ms": {
+              "version": "0.7.1"
+            }
+          }
         },
         "array-series": {
           "version": "0.1.5"
         },
         "array-parallel": {
           "version": "0.1.3"
-        },
-        "through": {
-          "version": "2.3.6"
         }
       }
     }

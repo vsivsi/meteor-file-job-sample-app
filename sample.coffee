@@ -520,16 +520,14 @@ if Meteor.isServer
                job.fail "Error running graphicsmagick: #{err}", { fatal: true }
                return cb()
 
-            inFile = myData.findOne { _id: job.data.inputFileId }
-
             inStream = myData.findOneStream { _id: job.data.inputFileId }
             unless inStream
-               job.fail 'Input file not found'
+               job.fail 'Input file not found', { fatal: true }
                return cb()
 
             job.progress 20, 100
 
-            gm(inStream, inFile.filename or '')
+            gm(inStream)
                .resize(150,150)
                .stream 'png', Meteor.bindEnvironment (err, stdout, stderr) ->
                   stderr.pipe process.stderr
