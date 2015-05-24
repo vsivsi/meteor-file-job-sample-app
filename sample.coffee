@@ -520,6 +520,13 @@ if Meteor.isServer
                job.fail "Error running graphicsmagick: #{err}", { fatal: true }
                return cb()
 
+            job.log "Beginning work on thumbnail image: #{job.data.inputFileId.toHexString()}",
+               level: 'info'
+               data:
+                  input: job.data.inputFileId
+                  output: job.data.outputFileId
+               echo: true
+
             inStream = myData.findOneStream { _id: job.data.inputFileId }
             unless inStream
                job.fail 'Input file not found', { fatal: true }
@@ -543,6 +550,12 @@ if Meteor.isServer
                         else
                            job.progress 80, 100
                            myData.update { _id: job.data.inputFileId }, { $set: 'metadata.thumbComplete': true }
+                           job.log "Finished work on thumbnail image: #{job.data.outputFileId.toHexString()}",
+                              level: 'info'
+                              data:
+                                 input: job.data.inputFileId
+                                 output: job.data.outputFileId
+                              echo: true
                            job.done()
                         return cb()
 
