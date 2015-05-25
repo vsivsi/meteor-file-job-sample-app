@@ -556,7 +556,7 @@ if Meteor.isServer
                                  input: job.data.inputFileId
                                  output: job.data.outputFileId
                               echo: true
-                           job.done()
+                           job.done(file)
                         return cb()
 
                      unless outStream
