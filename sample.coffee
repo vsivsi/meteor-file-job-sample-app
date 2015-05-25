@@ -378,6 +378,9 @@ if Meteor.isServer
    gm = Meteor.npmRequire 'gm'
    exec = Meteor.npmRequire('child_process').exec
 
+   colors = ['red', 'green', 'blue', 'cyan', 'magenta', 'yellow', 'black', 'white']
+   colorCount = 0
+
    myJobs.setLogStream process.stdout
    myJobs.promote 2500
 
@@ -472,6 +475,7 @@ if Meteor.isServer
                      # These Id values are used by the worker to read and write the correct files for this job.
                      inputFileId: file._id
                      outputFileId: outputFileId
+                     border: colors[colorCount++ % 8]
                   if jobId = job.delay(5000).retry({ wait: 20000, retries: 5 }).save()
                      myData.update({ _id: file._id }, { $set: { 'metadata._Job': jobId, 'metadata.thumb': outputFileId }})
                      myData.update({ _id: outputFileId }, { $set: { 'metadata._Job': jobId, 'metadata.thumbOf': file._id }})
@@ -536,6 +540,8 @@ if Meteor.isServer
 
             gm(inStream)
                .resize(150,150)
+               .borderColor(job.data.border)
+               .border(10,10)
                .stream 'png', Meteor.bindEnvironment (err, stdout, stderr) ->
                   stderr.pipe process.stderr
                   if err
