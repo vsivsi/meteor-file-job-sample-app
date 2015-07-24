@@ -9,10 +9,10 @@
 </body>
 
 <template name="master">
-  {{> top}}
-  {{> yield "nav"}}
-  {{> yield "content"}}
- </template>
+	{{> top}}
+	{{> Template.dynamic template=nav data=navData}}
+	{{> Template.dynamic template=content data=contentData}}
+</template>
 
 <template name="top">
   <div class="container panel">
@@ -30,43 +30,45 @@
 <template name="nav">
     <div class="container panel">
       <ul class="nav nav-pills">
-        <li class="{{active 'gallery'}}"><a href="{{pathFor route='gallery'}}">Gallery</a></li>
-        <li class="{{active 'files'}}"><a href="{{pathFor route='files'}}">Files</a></li>
-        <li class="{{active 'jobs'}}"><a href="{{pathFor route='jobs'}}">Jobs</a></li>
+        <li class="{{active 'gallery'}}"><a href="/gallery">Gallery</a></li>
+        <li class="{{active 'files'}}"><a href="/files">Files</a></li>
+        <li class="{{active 'jobs'}}"><a href="/jobs">Jobs</a></li>
       </ul>
     </div>
 </template>
 
 <template name="gallery">
-  <div class="container panel panel-default">
-    <div class="panel-heading"><h4>Image gallery</h4></div>
-    <div class="panel-body {{root}}DropZone">
-      <div class="row equal">
-        {{#each dataEntries}}
-          <div class="col-sm-6 col-lg-2">
-            <div class="thumbnail">
-              {{#if isImage}}
-                {{#if thumb}}
-                  <a href="{{../baseURL}}/id/{{id}}"><img class="img-thumbnail" alt="{{altMessage}}" src="{{../baseURL}}/id/{{thumb}}"></a>
-                {{else}}
-                  <a href="{{../baseURL}}/id/{{id}}"><img class="img-thumbnail" alt="{{altMessage}}" src=""></a>
-                {{/if}}
-              {{else}}
-                <span class="text-muted text-center">No preview</span>
-              {{/if}}
-              <div class="caption text-center">{{shortFilename 16}}</div>
-            </div>
-          </div>
-        {{else}}
-          <div class="col-sm-12">
-            <div class="container">
-              <p class="lead text-info text-center ">No images in gallery, drag some image files here to upload</p>
-            </div>
-          </div>
-        {{/each}}
-      </div>
-    </div>
-  </div>
+	{{#with data}}
+	  <div class="container panel panel-default">
+	    <div class="panel-heading"><h4>Image gallery</h4></div>
+	    <div class="panel-body {{root}}DropZone">
+	      <div class="row equal">
+	        {{#each dataEntries}}
+	          <div class="col-sm-6 col-lg-2">
+	            <div class="thumbnail">
+	              {{#if isImage}}
+	                {{#if thumb}}
+	                  <a href="{{../baseURL}}/id/{{id}}"><img class="img-thumbnail" alt="{{altMessage}}" src="{{../baseURL}}/id/{{thumb}}"></a>
+	                {{else}}
+	                  <a href="{{../baseURL}}/id/{{id}}"><img class="img-thumbnail" alt="{{altMessage}}" src=""></a>
+	                {{/if}}
+	              {{else}}
+	                <span class="text-muted text-center">No preview</span>
+	              {{/if}}
+	              <div class="caption text-center">{{shortFilename 16}}</div>
+	            </div>
+	          </div>
+	        {{else}}
+	          <div class="col-sm-12">
+	            <div class="container">
+	              <p class="lead text-info text-center ">No images in gallery, drag some image files here to upload</p>
+	            </div>
+	          </div>
+	        {{/each}}
+	      </div>
+	    </div>
+	  </div>
+	{{/with}}
 </template>
 
 <template name="fileControls">
@@ -78,60 +80,62 @@
 </template>
 
 <template name="fileTable">
-  <div class="container panel panel-default">
-    <div class="panel-heading"><h4>File Collection</h4></div>
-    {{> fileControls}}
-    <div class="panel-body">
-      <table class="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>ID</th>
-            <th>Owner</th>
-            <th>Size</th>
-            <th>Type</th>
-            <th>Checksum</th>
-          </tr>
-        </thead>
-        <tbody>
-        {{#each dataEntries}}
-          <tr>
-            <td>
-              <a href="{{../baseURL}}/id/{{id}}?download=true">{{shortFilename 32}}</a>
-              <button type="button" class="close del-file" aria-hidden="true">&times;</button>
-            </td>
-            <td>{{id}}</td>
-            <td>
-              {{#if owner}}
-                {{owner}}
-              {{else}}
-                <span class="text-muted">No owner</span>
-              {{/if}}
-            </td>
-            <td>
-              {{#if length}}
-                {{formattedLength}}
-              {{else}}
-                {{uploadStatus}}
-                <div class="progress">
-                  <div class="progress-bar" role="progressbar" min-width="60px" aria-valuenow="{{uploadProgress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{uploadProgress}}%;">
-                      <span class="text-muted">{{uploadProgress}}%</span>
-                  </div>
-                </div>
-              {{/if}}
-            </td>
-            <td>{{contentType}}</td>
-            <td>{{md5}}</td>
-          </tr>
-        {{else}}
-          <tr><td colspan="20" align=center>
-            <span class="text-info">No files in collection...</span>
-          </td></tr>
-        {{/each}}
-        </tbody>
-      </table>
-    </div>
-  </div>
+	{{#with data}}
+	  <div class="container panel panel-default">
+	    <div class="panel-heading"><h4>File Collection</h4></div>
+	    {{> fileControls}}
+	    <div class="panel-body">
+	      <table class="table table-bordered table-striped">
+	        <thead>
+	          <tr>
+	            <th>Name</th>
+	            <th>ID</th>
+	            <th>Owner</th>
+	            <th>Size</th>
+	            <th>Type</th>
+	            <th>Checksum</th>
+	          </tr>
+	        </thead>
+	        <tbody>
+	        {{#each dataEntries}}
+	          <tr>
+	            <td>
+	              <a href="{{../baseURL}}/id/{{id}}?download=true">{{shortFilename 32}}</a>
+	              <button type="button" class="close del-file" aria-hidden="true">&times;</button>
+	            </td>
+	            <td>{{id}}</td>
+	            <td>
+	              {{#if owner}}
+	                {{owner}}
+	              {{else}}
+	                <span class="text-muted">No owner</span>
+	              {{/if}}
+	            </td>
+	            <td>
+	              {{#if length}}
+	                {{formattedLength}}
+	              {{else}}
+	                {{uploadStatus}}
+	                <div class="progress">
+	                  <div class="progress-bar" role="progressbar" min-width="60px" aria-valuenow="{{uploadProgress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{uploadProgress}}%;">
+	                      <span class="text-muted">{{uploadProgress}}%</span>
+	                  </div>
+	                </div>
+	              {{/if}}
+	            </td>
+	            <td>{{contentType}}</td>
+	            <td>{{md5}}</td>
+	          </tr>
+	        {{else}}
+	          <tr><td colspan="20" align=center>
+	            <span class="text-info">No files in collection...</span>
+	          </td></tr>
+	        {{/each}}
+	        </tbody>
+	      </table>
+	    </div>
+	  </div>
+	{{/with}}
 </template>
 
 <template name="jobControls">
@@ -158,37 +162,39 @@
 </template>
 
 <template name="jobTable">
-  <div class="container panel panel-default">
-    <div class="panel-heading"><h4>Job Collection</h4></div>
-    {{> jobControls}}
-    <div class="panel-body">
-      <table class="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>ID</th>
-            <th>Run</th>
-            <th>Updated</th>
-            <th>Pri</th>
-            <th>Dep</th>
-            <th>Attempts</th>
-            <th>Repeats</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-        {{#each jobEntries}}
-          {{> jobEntry}}
-        {{else}}
-          <tr><td colspan="20" align=center>
-            <span class="text-info">No jobs in collection...</span>
-          </td></tr>
-        {{/each}}
-        </tbody>
-      </table>
-    </div>
-  </div>
+	{{#with data}}
+	  <div class="container panel panel-default">
+	    <div class="panel-heading"><h4>Job Collection</h4></div>
+	    {{> jobControls}}
+	    <div class="panel-body">
+	      <table class="table table-bordered table-striped">
+	        <thead>
+	          <tr>
+	            <th>Type</th>
+	            <th>ID</th>
+	            <th>Run</th>
+	            <th>Updated</th>
+	            <th>Pri</th>
+	            <th>Dep</th>
+	            <th>Attempts</th>
+	            <th>Repeats</th>
+	            <th>Status</th>
+	            <th>Actions</th>
+	          </tr>
+	        </thead>
+	        <tbody>
+	        {{#each jobEntries}}
+	          {{> jobEntry}}
+	        {{else}}
+	          <tr><td colspan="20" align=center>
+	            <span class="text-info">No jobs in collection...</span>
+	          </td></tr>
+	        {{/each}}
+	        </tbody>
+	      </table>
+	    </div>
+	  </div>
+	{{/with}}
 </template>
 
 <template name="jobEntry">

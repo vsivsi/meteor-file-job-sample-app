@@ -14,5 +14,6 @@ benjaminrh:jquery-cookie
 numeral:numeral
 momentjs:moment
 meteorhacks:npm
-iron:router
+meteorhacks:flow-router
+meteorhacks:flow-layout
 npm-container

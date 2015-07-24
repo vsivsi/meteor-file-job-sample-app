@@ -23,53 +23,64 @@ myJobs = new JobCollection 'queue',
          res = d
       return res
 
-Router.configure
-   layoutTemplate: 'master'
-
-Router.route '/', () ->
-   this.redirect '/gallery'
-
-Router.route '/gallery', () ->
-
-   this.render 'nav',
-      to: 'nav'
-      data: 'gallery'
-
-   this.render 'gallery',
-      to: 'content'
-      data: myData
-
-Router.route '/files', () ->
-
-   this.render 'nav',
-      to: 'nav'
-      data: 'files'
-
-   this.render 'fileTable',
-      to: 'content'
-      data: myData
-
-Router.route '/jobs', () ->
-
-   this.render 'nav',
-      to: 'nav'
-      data: 'jobs'
-
-   this.render 'jobTable',
-      to: 'content'
-      data: myJobs
-
 ############################################################
 # Client-only code
 ############################################################
 
 if Meteor.isClient
 
+   dataLookup =
+      myData: myData
+      myJobs: myJobs
+
    imageTypes =
       'image/jpeg': true
       'image/png': true
       'image/gif': true
       'image/tiff': true
+
+   renderLayout = (template, data = {}, domNode = $('body').get(0)) ->
+      Blaze.renderWithData Template[template], data, domNode
+
+   FlowLayout.setRoot 'body'
+
+   FlowRouter.route '/',
+      triggersEnter: [
+         (context, redirect) ->
+            redirect '/gallery'
+         ]
+      action: () ->
+         throw new Error "this should not get called"
+
+   FlowRouter.route '/gallery',
+      action: () ->
+         FlowLayout.render 'master',
+            nav: 'nav'
+            navData:
+               page: 'gallery'
+            content: 'gallery'
+            contentData:
+               collection: 'myData'
+
+   FlowRouter.route '/files',
+      action: () ->
+         FlowLayout.render 'master',
+            nav: 'nav'
+            navData:
+               page: 'files'
+            content: 'fileTable'
+            contentData:
+               collection: 'myData'
+
+   FlowRouter.route '/jobs',
+      action: () ->
+         FlowLayout.render 'master',
+            nav: 'nav'
+            navData:
+               page: 'jobs'
+            content: 'jobTable'
+            contentData:
+               collection: 'myJobs'
 
    Meteor.startup () ->
 
@@ -134,6 +145,9 @@ if Meteor.isClient
    shortFilename = (w = 16) ->
       shorten this.filename, w
 
+   Template.registerHelper 'data', () ->
+      dataLookup[this.collection]
+
    Template.top.helpers
       loginToken: () ->
          Meteor.userId()
@@ -143,7 +157,7 @@ if Meteor.isClient
 
    Template.nav.helpers
       active: (pill) ->
-         return "active" if pill is "#{this}"
+         return "active" if pill is this.page
 
    Template.fileTable.helpers
       dataEntries: () ->
@@ -207,7 +221,7 @@ if Meteor.isClient
 
    Template.gallery.rendered = () ->
       # This assigns a file drop zone to the "file table"
-      this.data.resumable.assignDrop $(".#{myData.root}DropZone")
+      dataLookup[this.data.collection].resumable.assignDrop $(".#{dataLookup[this.data.collection].root}DropZone")
 
    Template.fileControls.events
       'click .remove-files': (e, t) ->
