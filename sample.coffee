@@ -190,9 +190,9 @@ if Meteor.isClient
       'click .del-file': (e, t) ->
          # Management of thumbnails happens on the server!
          if this.metadata.thumbOf?
-            t.data.remove this.metadata.thumbOf
+            dataLookup[t.data.collection].remove this.metadata.thumbOf
          else
-            t.data.remove this._id
+            dataLookup[t.data.collection].remove this._id
 
    Template.gallery.helpers
       dataEntries: () ->
