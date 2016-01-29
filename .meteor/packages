@@ -16,4 +16,7 @@ momentjs:moment
 meteorhacks:npm
 meteorhacks:flow-router
 meteorhacks:flow-layout
+standard-minifiers
+
+
 npm-container
