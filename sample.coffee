@@ -188,11 +188,17 @@ if Meteor.isClient
    Template.fileTable.events
       # Wire up the event to remove a file by clicking the `X`
       'click .del-file': (e, t) ->
+         # If there's an active upload, cancel it
+         coll = dataLookup[t.data.collection]
+         if Session.get "#{this._id}"
+            console.warn "Cancelling active upload to remove file! #{this._id}"
+            coll.resumable.removeFile(coll.resumable.getFromUniqueIdentifier "#{this._id}")
+
          # Management of thumbnails happens on the server!
          if this.metadata.thumbOf?
-            dataLookup[t.data.collection].remove this.metadata.thumbOf
+            coll.remove this.metadata.thumbOf
          else
-            dataLookup[t.data.collection].remove this._id
+            coll.remove this._id
 
    Template.gallery.helpers
       dataEntries: () ->
