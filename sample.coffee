@@ -129,7 +129,7 @@ if Meteor.isClient
       userId = Meteor.userId()
       Meteor.subscribe 'allData', userId
       Meteor.subscribe 'allJobs', userId
-      $.cookie 'X-Auth-Token', Accounts._storedLoginToken()
+      $.cookie 'X-Auth-Token', Accounts._storedLoginToken(), { path: '/'}
 
    #####################
    # UI template helpers
