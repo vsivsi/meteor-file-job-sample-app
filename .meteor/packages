@@ -13,12 +13,12 @@ vsivsi:job-collection
 benjaminrh:jquery-cookie
 numeral:numeral
 momentjs:moment
-meteorhacks:npm
 meteorhacks:flow-router
 meteorhacks:flow-layout
 
 
-npm-container
 standard-minifier-css@1.2.0
 standard-minifier-js@1.2.0
 shell-server
+
+

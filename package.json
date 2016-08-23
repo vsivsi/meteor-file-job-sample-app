@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "bcrypt": "^0.8.7",
+    "gm": "^1.23.0"
+  },
+  "author": "Vaughn Iverson",
+  "license": "MIT"
+}

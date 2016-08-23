@@ -43,10 +43,8 @@ localstorage@1.0.11
 logging@1.1.15
 meteor@1.2.17
 meteor-platform@1.2.6
-meteorhacks:async@1.0.0
 meteorhacks:flow-layout@1.4.2
 meteorhacks:flow-router@1.19.0
-meteorhacks:npm@1.5.0
 minifier-css@1.2.14
 minifier-js@1.2.14
 minimongo@1.0.17
@@ -58,7 +56,6 @@ mongo@1.1.11
 mongo-id@1.0.5
 mrt:later@1.6.1
 npm-bcrypt@0.9.1
-npm-container@1.2.0
 npm-mongo@1.5.47
 numeral:numeral@1.5.3_1
 observe-sequence@1.0.12
