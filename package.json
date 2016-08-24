@@ -1,7 +1,10 @@
 {
   "dependencies": {
     "bcrypt": "^0.8.7",
-    "gm": "^1.23.0"
+    "gm": "^1.23.0",
+    "meteor-node-stubs": "^0.2.3",
+    "spawn-sync": "^1.0.15",
+    "try-thread-sleep": "^1.0.0"
   },
   "author": "Vaughn Iverson",
   "license": "MIT"

@@ -395,11 +395,6 @@ if Meteor.isClient
 
 if Meteor.isServer
 
-   # `
-   #    import gm from 'gm';
-   #    import { exec } from 'child_process';
-   # `
-
    gm = require 'gm'
    { exec } = require 'child_process'
 
