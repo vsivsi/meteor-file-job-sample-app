@@ -3,11 +3,11 @@
 # 'meteor add' and 'meteor remove' will edit this file for you,
 # but you can also edit it by hand.
 
-standard-app-packages
-coffeescript
+standard-app-packages@1.0.9
+coffeescript@1.2.4_1
 twbs:bootstrap
-accounts-ui
-accounts-password
+accounts-ui@1.1.9
+accounts-password@1.3.0
 vsivsi:file-collection
 vsivsi:job-collection
 benjaminrh:jquery-cookie
@@ -16,8 +16,8 @@ momentjs:moment
 meteorhacks:flow-router
 meteorhacks:flow-layout
 
-standard-minifier-css
-standard-minifier-js
-shell-server
+standard-minifier-css@1.2.0
+standard-minifier-js@1.2.0
+shell-server@0.2.1
 
-modules
+modules@0.7.6
