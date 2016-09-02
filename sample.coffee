@@ -271,11 +271,12 @@ if Meteor.isClient
          job = Template.currentData()
          job.resume() if job
 
-   isInfinity = (val) ->
-      if val > Job.forever - 7199254740935
+   # If two values sum to forever, then ∞, else the first value
+   isInfinity = (val1, val2) ->
+      if (val1 + val2) is Job.forever
          "∞"
       else
-         val
+         val1
 
    Template.jobEntry.helpers
       numDepends: () ->
@@ -298,9 +299,9 @@ if Meteor.isClient
             completed: 'success'
          }[this.status]
 
-      numRepeats: () -> isInfinity this.repeats
+      numRepeats: () -> isInfinity this.repeats, this.repeated
 
-      numRetries: () -> isInfinity this.retries
+      numRetries: () -> isInfinity this.retries, this.retried
 
       runAt: () ->
          Session.get 'date'
