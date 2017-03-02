@@ -7,17 +7,17 @@ standard-app-packages@1.0.9
 coffeescript@1.11.1_4
 twbs:bootstrap
 accounts-ui@1.1.9
-accounts-password@1.3.3
-vsivsi:file-collection
-vsivsi:job-collection
+accounts-password@1.3.4
+vsivsi:file-collection@1.3.8
+vsivsi:job-collection@1.4.0
 benjaminrh:jquery-cookie
 numeral:numeral
 momentjs:moment
 meteorhacks:flow-router
 meteorhacks:flow-layout
 
-standard-minifier-css@1.3.2
-standard-minifier-js@1.2.1
-shell-server@0.2.1
+standard-minifier-css@1.3.3
+standard-minifier-js@1.2.2
+shell-server@0.2.2
 
-modules@0.7.7
+modules@0.7.9
